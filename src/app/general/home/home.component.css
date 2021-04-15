@@ -1,0 +1,41 @@
+:root{
+    font-size: 20px;
+  }
+  
+.home-image{
+    width: 100vmax;
+    max-width:100%;
+    height:auto;
+}
+
+.main>ul>li>a{
+  color: rgb(219, 216, 216);
+}
+
+.main>ul>li>a:hover{
+  color: white;
+}
+  
+  @media screen and (min-width: 1020px)and (max-width:1040px) {
+    .home-text{
+      font-size:3.75rem;
+    }
+    .main-button{
+      font-size: 2.5rem;
+    }
+  }
+  
+  @media screen and (min-width: 270px)and (max-width:415px) {
+    .home-text{
+      font-size:1.75rem;
+    }
+  }
+  
+  @media screen and (min-width: 750px)and (max-width:850px) {
+    .home-text{
+      font-size:2.75rem;
+    }
+    .main-button{
+      font-size: 2.0rem;
+    }
+  }

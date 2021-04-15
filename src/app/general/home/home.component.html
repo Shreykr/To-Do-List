@@ -1,1 +1,39 @@
-<p>home works!</p>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" [routerLink]="['/home']">
+            <img src="assets/img1.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
+            toDoList</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarScroll"
+            aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse main" id="navbarScroll">
+            <ul class=" navbar-nav mt-2  ml-auto" style="--bs-scroll-height: 100px;">
+                <li class="nav-item">
+                    <a class="nav-link" [routerLink]="['/login']">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" [routerLink]="['/signup']">Sign up</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex flex-row flex-wrap align-items-center">
+            <div class="col-xl-7"><img class="home-image" src="/assets/img5.jpg"></div>
+            <div class="col-xl-5">
+                <div class="d-flex flex-column justify-content-center align-content-center">
+                    <h1 class="display-5 text-center home-text"> Plan all your work in one place<br />with toDoList</h1>
+                    <br />
+                    <button type="button" class="btn btn-danger btn-lg mx-auto main-button"
+                        (click)="navigateToSignUp()">Get
+                        Started</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
