@@ -40,9 +40,12 @@
                         'has-success': profileLoginForm.get('userLoginPassword').valid && profileLoginForm.get('userLoginPassword').dirty
                       }" id="passwordInput" placeholder="Enter your password" formControlName="userLoginPassword">
                 </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-success btn-lg d-grid gap-2 col-sm-4 mx-auto"
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success d-grid gap-2 col-sm-5 "
                         [disabled]="!profileLoginForm.valid">Submit</button>
+
+                    <button type="submit" class="btn btn-danger d-grid gap-2 col-sm-5 ml-auto">Forgot
+                        Password?</button>
                 </div>
             </form>
         </div>

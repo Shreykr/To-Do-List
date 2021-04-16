@@ -1,3 +1,12 @@
+/* Alternative way to debug is using this*/
+
+/* * {
+  border: 1px solid rgb(153, 0, 255) !important;
+} */
+
+
+
+
 :root{
     margin-top:2px;
 }
@@ -19,7 +28,7 @@
 } 
 
 .form-content{    
-  max-width:400px;
+  max-width:600px;
   margin:auto;
   background: rgb(250, 245, 245);
     /* background: linear-gradient(
@@ -33,6 +42,10 @@
   border-radius: 10px;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
 
 .form-heading{
   color:rgb(5, 5, 5);
@@ -40,12 +53,6 @@
   font-weight:bold;
   margin-bottom: 30px;
   text-align: center;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: row;
-  justify-content:center;
 }
   
 .form-group label {
@@ -62,6 +69,7 @@
 .form-group .form-control {
   flex: 1 1 auto;
   display:flex;
+  flex-flow:column nowrap;
   margin-right: 50px;
 }
 
@@ -69,6 +77,16 @@
   font-size: 0.85rem;
   opacity: 0.5;
 }
+
+
+.button-group{
+  display: flex;
+  flex-flow:row nowrap;
+}
+button{
+  font-size:0.75rem;
+}
+
 
 .error-block{
   color:red;
@@ -82,11 +100,22 @@
 .has-success{
   border: 2px solid green;
 }
-
+@media screen and (width:576px){
+  .button-group{
+    flex-flow: row nowrap;
+  }
+}
+@media screen and (max-width:576px){
+  .button-group{
+    flex-flow: column nowrap;
+  }
+  button{
+    margin-top:1rem;
+  }
+}
 @media screen and (max-height:925px){
   .main-content{
     height:auto;
-    min-height:height+5vh;
   }
   .form-group {
     flex-direction: column;
@@ -101,20 +130,26 @@
   }     
 }
 
+/* @media screen and (min-height:925px){
+  .form-group {
+    flex-direction: column;
+  }
+} */
+
 @media screen and (min-width:140px) and (max-height:785px){
   .main-content{
-    min-width:100vw;
+    width:100%;
   }
   .form-content{
     margin-top:5rem;
   }
 }
 
-@media screen and (min-height:925px) and (min-width:998px){
+/* @media screen and (min-height:925px) and (min-width:998px){
   .form-content{
     min-width:800px;
   }
-}
+} */
 
 .main>ul>li>a{
     color: rgb(219, 216, 216);

@@ -2,6 +2,7 @@
   margin-top:2px;
 }
 
+
 .main-content{
   background: linear-gradient(
     to top,
@@ -38,7 +39,7 @@
   font-weight:bold;
   margin-bottom: 40px;
   text-align: center;
-  font-style: underline;
+
 }
 
 .form-group {
@@ -81,6 +82,7 @@
 .has-success{
   border: 2px solid green;
 }
+
 
 @media screen and (max-height:925px){
   .main-content{
