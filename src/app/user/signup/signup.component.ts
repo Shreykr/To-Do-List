@@ -19,7 +19,7 @@ export class SignupComponent implements OnInit {
     userLastName: new FormControl(null, [Validators.pattern("([a-zA-Z]{2,30}\s*)+")]),
     userMobileNumber: new FormControl(null, [Validators.required, Validators.pattern("^[1-9][0-9]{5,15}$")]),
     userCountry: new FormControl(null, [Validators.required]),
-    userMail: new FormControl(null, [Validators.required, Validators.email]),
+    userMail: new FormControl(null, [Validators.required, Validators.pattern("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$")]),
     userPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")]),
     userConfirmPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")])
   });

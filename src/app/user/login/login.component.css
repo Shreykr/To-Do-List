@@ -1,0 +1,124 @@
+:root{
+    margin-top:2px;
+}
+
+.main-content{
+  background: linear-gradient(
+  to top,
+  #16222a,
+  #733a3a
+  ); 
+  /* background: linear-gradient(
+    to top,
+    #16222a,
+    #733a3a
+  ); */
+  min-height:100vh;
+  display:flex;
+  flex-flow:column nowrap;
+} 
+
+.form-content{    
+  max-width:400px;
+  margin:auto;
+  background: rgb(250, 245, 245);
+    /* background: linear-gradient(
+    to top,
+    #16222a,
+    #733a3a
+  ); */
+  box-shadow: 8px 5px 5px #0a0a0a;
+  padding:20px;
+  margin-top:10rem;
+  border-radius: 10px;
+}
+
+
+.form-heading{
+  color:rgb(5, 5, 5);
+  font-size:1.40rem;
+  font-weight:bold;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+}
+  
+.form-group label {
+  flex:none;
+  width: 90px;
+  font-weight: bold;
+  font-size: 1rem;
+  color:rgb(0, 0, 0);
+} 
+/*#mobileNumberLabel {
+    width: 130px;
+}*/
+  
+.form-group .form-control {
+  flex: 1 1 auto;
+  display:flex;
+  margin-right: 50px;
+}
+
+.passwordInfo{
+  font-size: 0.85rem;
+  opacity: 0.5;
+}
+
+.error-block{
+  color:red;
+  font-size:0.75rem;
+}
+
+.has-danger{
+  border: 2px solid red;
+}
+
+.has-success{
+  border: 2px solid green;
+}
+
+@media screen and (max-height:925px){
+  .main-content{
+    height:auto;
+    min-height:height+5vh;
+  }
+  .form-group {
+    flex-direction: column;
+  }
+  .form-group .form-control {
+    margin-top: 2px;
+  }
+  .form-group label.right-inline {
+    text-align: left;  
+    padding-right: 0;
+    padding-left: 0;   
+  }     
+}
+
+@media screen and (min-width:140px) and (max-height:785px){
+  .main-content{
+    min-width:100vw;
+  }
+  .form-content{
+    margin-top:5rem;
+  }
+}
+
+@media screen and (min-height:925px) and (min-width:998px){
+  .form-content{
+    min-width:800px;
+  }
+}
+
+.main>ul>li>a{
+    color: rgb(219, 216, 216);
+}
+.main>ul>li>a:hover{
+    color: white;
+}
