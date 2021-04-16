@@ -31,9 +31,15 @@ export class AppService {
   }
 
   public signupFunction(data): Observable<any> {
+
     const params = new HttpParams()
+      .set('firstName', data.firstName)
+      .set('lastName', data.lastName)
+      .set('mobileNumber', data.mobileNumber)
+      .set('country', data.country)
       .set('email', data.email)
       .set('password', data.password)
+
 
     return this.http.post(`${this.url}/api/v1/users/signup`, params);
   } // end of signup function.

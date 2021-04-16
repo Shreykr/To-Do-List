@@ -1,4 +1,5 @@
 <div class="main-content">
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" [routerLink]="['/home']">
@@ -21,6 +22,11 @@
         </div>
     </nav>
 
+    <div class="progress">
+        <div class="progress-bar  progress-bar-striped bg-success" role="progressbar" [style.width]="resultPercentage"
+            aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+
     <div class="container">
         <div class="form-content">
             <form [formGroup]="profileSignupForm" (ngSubmit)="signUpFunction(profileSignupForm)">
@@ -29,39 +35,70 @@
                 </div>
                 <div class="form-group">
                     <label for="firstNameInput">First Name</label>
-                    <input type="text" class="form-control" id="firstNameInput" placeholder="" autocomplete="username">
+                    <input type="text" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userFirstName').invalid && profileSignupForm.get('userFirstName').dirty)||(profileSignupForm.get('userFirstName').touched && profileSignupForm.get('userFirstName').pristine)), 
+                        'has-success': profileSignupForm.get('userFirstName').valid && profileSignupForm.get('userFirstName').dirty
+                      }" id="firstNameInput" placeholder="Enter your First Name" autocomplete="username"
+                        formControlName="userFirstName" data-toggle="tooltip" title="Max 30 characters"
+                        (change)="updateProgressBar()">
                     <br />
                     <label for="secondNameInput" class="right-inline">Last Name</label>
-                    <input type="text" class="form-control" id="secondNameInput" placeholder="" autocomplete="username">
+                    <input type="text" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userLastName').invalid)), 
+                        'has-success': profileSignupForm.get('userLastName').valid && profileSignupForm.get('userLastName').dirty
+                      }" id="secondNameInput" placeholder="Enter your Last Name" autocomplete="username"
+                        formControlName="userLastName" data-toggle="tooltip" title="Max 30 characters, Optional">
                 </div>
                 <div class="form-group">
                     <label id="mobileNumberLabel" for="mobileNumberInput">Mobile Number</label>
-                    <input type="text" class="form-control" id="mobileNumberInput" placeholder="">
-                    <br />
+                    <input type="text" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userMobileNumber').invalid && profileSignupForm.get('userMobileNumber').dirty)||(profileSignupForm.get('userMobileNumber').touched && profileSignupForm.get('userMobileNumber').pristine)),
+                        'has-success': profileSignupForm.get('userMobileNumber').valid && profileSignupForm.get('userMobileNumber').dirty
+                      }" id="mobileNumberInput" placeholder="Enter your mobile number"
+                        formControlName="userMobileNumber" data-toggle="tooltip" title="Enter without country code"
+                        (change)="updateProgressBar()"><br />
+
                     <label for="countryInput" class="right-inline">Country</label>
-                    <select id="countryInput" class="form-control" size="3" aria-label="size 3 select example">
-                        <option selected>Choose your Country</option>
+                    <select id="countryInput" class="form-control" size="3" aria-label="size 3 select example"
+                        [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userCountry').invalid && profileSignupForm.get('userCountry').dirty)||(profileSignupForm.get('userCountry').touched && profileSignupForm.get('userMobileNumber').pristine)),
+                        'has-success': profileSignupForm.get('userCountry').valid && profileSignupForm.get('userCountry').dirty
+                      }" formControlName="userCountry" (change)="updateProgressBar()">
                         <option *ngFor="let country of countryList" [value]="country">{{country}}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Email</label>
-                    <input class="form-control" />
+                    <label for="mailInput">Email</label>
+                    <input type="text" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userMail').invalid && profileSignupForm.get('userMail').dirty)||(profileSignupForm.get('userMail').touched && profileSignupForm.get('userMail').pristine)), 
+                        'has-success': profileSignupForm.get('userMail').valid && profileSignupForm.get('userMail').dirty
+                      }" id="mailInput" placeholder="Enter your mail Id" formControlName="userMail"
+                        (change)="updateProgressBar()">
                 </div>
 
                 <div class="form-group">
-                    <label>Password</label>
-                    <input class="form-control" />
+                    <label for="passwordInput">Password</label>
+                    <input type="password" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userPassword').invalid && profileSignupForm.get('userPassword').dirty)||(profileSignupForm.get('userPassword').touched && profileSignupForm.get('userPassword').pristine)), 
+                        'has-success': profileSignupForm.get('userPassword').valid && profileSignupForm.get('userPassword').dirty
+                      }" id="passwordInput" placeholder="Enter your password" formControlName="userPassword"
+                        data-toggle="tooltip" title="Minimum 8 characters 1 number 1
+                        uppercase and 1 lowercase letter" (change)="verify()" (change)="updateProgressBar()">
                 </div>
 
-                <div class="form-group">
+                <div class=" form-group">
                     <label id="confirmPassword" for="confirmPasswordInput">Confirm Password</label>
-                    <input type="text" class="form-control" id="confirmPasswordInput" placeholder="">
+                    <input type="password" class="form-control" [ngClass]="{
+                        'has-danger': ((profileSignupForm.get('userConfirmPassword').invalid && profileSignupForm.get('userConfirmPassword').dirty)||(profileSignupForm.get('userConfirmPassword').touched && profileSignupForm.get('userConfirmPassword').pristine))||(!result && profileSignupForm.get('userConfirmPassword').dirty), 
+                        'has-success': profileSignupForm.get('userConfirmPassword').valid && profileSignupForm.get('userConfirmPassword').dirty && result
+                      }" id="confirmPasswordInput" placeholder="Enter your password again" data-toggle="tooltip"
+                        title="Passwords have to match" formControlName="userConfirmPassword" (change)="verify()"
+                        (change)="updateProgressBar()">
                 </div>
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary btn-lg d-grid gap-2 col-sm-4 mx-auto"
+                    <button type="submit" class="btn btn-success btn-lg d-grid gap-2 col-sm-4 mx-auto"
                         [disabled]="(!profileSignupForm.valid || !result) || (profileSignupForm.valid && !result) ">Submit</button>
                 </div>
             </form>

@@ -3,24 +3,41 @@
 }
 
 .main-content{
-    background-color: red;
+    background: linear-gradient(
+    to top,
+    #16222a,
+    #733a3a
+  ); 
+  /* background: linear-gradient(
+    to top,
+    #16222a,
+    #733a3a
+  ); */
+  min-height:100vh;
     display:flex;
     flex-flow:column nowrap;
 } 
 
 .form-content{
-    background-color: blue;
+    
+    background: rgb(250, 245, 245);
+    /* background: linear-gradient(
+    to top,
+    #16222a,
+    #733a3a
+  ); */
+  box-shadow: 8px 5px 5px #0a0a0a;
     padding:20px;
-    margin-top:2rem;
+    margin-top:4rem;
     border-radius: 10px;
 }
 
 
 .form-heading{
-    color:black;
+    color:rgb(5, 5, 5);
     font-size:1.5rem;
     font-weight:bold;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 .form-group {
@@ -34,7 +51,7 @@
     width: 90px;
     font-weight: bold;
     font-size: 1rem;
-    color:black;
+    color:rgb(0, 0, 0);
   } 
   /* #mobileNumberLabel {
     width: 130px;
@@ -51,6 +68,25 @@
     opacity: 0.5;
  }
 
+ .error-block{
+    color:red;
+    font-size:0.75rem;
+}
+
+.has-danger{
+    border: 2px solid red;
+}
+
+.has-success{
+    border: 2px solid green;
+}
+
+ @media screen and (max-height:925px){
+     .main-content{
+         height:auto;
+         min-height:height+5vh;
+     }
+ }
 
   @media (max-width: 768px) {
     .form-group {
@@ -69,18 +105,11 @@
     }
     #confirmPassword{
         width:138px;
-    }
-
-    
-    
+    }   
   }
-
-  
-
 .main>ul>li>a{
     color: rgb(219, 216, 216);
   }
-  
 .main>ul>li>a:hover{
     color: white;
   }
