@@ -31,7 +31,8 @@
                     <input type="text" class="form-control" [ngClass]="{
                         'has-danger': ((profileLoginForm.get('userLoginMail').invalid && profileLoginForm.get('userLoginMail').dirty)||(profileLoginForm.get('userLoginMail').touched && profileLoginForm.get('userLoginMail').pristine)), 
                         'has-success': profileLoginForm.get('userLoginMail').valid && profileLoginForm.get('userLoginMail').dirty
-                      }" id="mailInput" placeholder="Enter your mail Id" formControlName="userLoginMail">
+                      }" id="mailInput" placeholder="Enter your mail Id" formControlName="userLoginMail"
+                        data-toggle="tooltip" title="Required">
                 </div>
                 <div class="form-group">
                     <label for="passwordInput">Password</label>
@@ -41,10 +42,11 @@
                       }" id="passwordInput" placeholder="Enter your password" formControlName="userLoginPassword">
                 </div>
                 <div class="button-group">
-                    <button type="submit" class="btn btn-success d-grid gap-2 col-sm-5 "
+                    <button type="submit" class="btn btn-success d-grid gap-2 col-sm-5"
                         [disabled]="!profileLoginForm.valid">Submit</button>
-
-                    <button type="submit" class="btn btn-danger d-grid gap-2 col-sm-5 ml-auto">Forgot
+                    <button type="button" class="btn btn-danger d-grid gap-2 col-sm-5 ml-auto"
+                        [disabled]="!profileLoginForm.get('userLoginMail').valid"
+                        (click)="sendRecoveryMail(); $event.preventDefault()">Forgot
                         Password?</button>
                 </div>
             </form>

@@ -1,9 +1,12 @@
-import { NgModule } from '@angular/core';
+//Components
 import { SignupComponent } from './user/signup/signup.component';
 import { HomeComponent } from './general/home/home.component';
 import { LoginComponent } from './user/login/login.component';
 import { AppComponent } from './app.component';
+import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component'
 
+//Modules
+import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { BrowserModule } from '@angular/platform-browser';
@@ -12,13 +15,13 @@ import { ToastrModule } from 'ngx-toastr';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppService } from './app.service';
-
 @NgModule({
   declarations: [
     AppComponent,
     SignupComponent,
     HomeComponent,
-    LoginComponent
+    LoginComponent,
+    PasswordRecoveryComponent
   ],
   imports: [
     BrowserModule,
@@ -28,12 +31,12 @@ import { AppService } from './app.service';
     ToastrModule.forRoot(),
     RouterModule.forRoot([
       { path: 'home', component: HomeComponent },
-      { path: 'login', component: LoginComponent },
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'signup', component: SignupComponent },
+      { path: 'login', component: LoginComponent },
+      { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },
       { path: '**', component: HomeComponent }
-
     ])
   ],
   providers: [AppService],

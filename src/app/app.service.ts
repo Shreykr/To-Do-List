@@ -53,6 +53,22 @@ export class AppService {
 
   } //end of login function
 
+  public editUserPassword(data): Observable<any> {
+    const params = new HttpParams()
+      .set('authToken', data.authToken)
+      .set('userId', data.userId)
+      .set('newPassword', data.newPassword)
+
+    return this.http.post(`${this.url}/api/v1/users/editUserPassword`, params);
+  }
+
+  public sendMail(data): Observable<any> {
+    const params = new HttpParams()
+      .set('email', data.email);
+
+    return this.http.post(`${this.url}/api/v1/users/send-mail`, params);
+  } //end of login function
+
   public logoutFunction(): Observable<any> {
     const params = new HttpParams()
       .set('authToken', Cookie.get('authToken'))
@@ -74,7 +90,5 @@ export class AppService {
     return Observable.throw(errorMessage);
 
   }  // end of handleError function
-
-
 }
 

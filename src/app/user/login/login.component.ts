@@ -35,6 +35,24 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/home'])
   }
 
+  sendRecoveryMail() {
+    let data = {
+      email: this.profileLoginForm.controls.userLoginMail.value
+    }
+    this.appService.sendMail(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toastr.success(apiResult.message);
+      }
+      else {
+        console.log(1)
+        this.toastr.error(apiResult.message);
+      }
+    }, (err) => {
+
+      this.toastr.error("Some Error Occured");
+    })
+  }
+
   /* Sending the data so as to sign up */
   signUpFunction(f) {
     // TODO: Use EventEmitter with form value
@@ -53,6 +71,7 @@ export class LoginComponent implements OnInit {
           this.goToApp();
         }, 2000);
       } else {
+        console.log(2)
         this.toastr.error(apiResult.message)
       }
     }, (err) => {

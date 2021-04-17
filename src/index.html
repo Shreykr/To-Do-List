@@ -17,11 +17,8 @@
   <script>
     $(document).ready(function () {
       setTimeout(function () {
-        $('[data-toggle="tooltip"]').tooltip({ delay: 1000, trigger: "hover" });
+        $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
       }, 5000)
-
-
-
       $('[data-toggle="tooltip"]').tooltip('dispose'); // used in v4
     });
   </script>
