@@ -4,7 +4,7 @@ import { HomeComponent } from './general/home/home.component';
 import { LoginComponent } from './user/login/login.component';
 import { AppComponent } from './app.component';
 import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component'
-
+import { MainHomeComponent } from './main/main-home/main-home.component';
 //Modules
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,8 @@ import { AppService } from './app.service';
     SignupComponent,
     HomeComponent,
     LoginComponent,
-    PasswordRecoveryComponent
+    PasswordRecoveryComponent,
+    MainHomeComponent
   ],
   imports: [
     BrowserModule,
@@ -33,6 +34,7 @@ import { AppService } from './app.service';
       { path: 'home', component: HomeComponent },
       { path: 'signup', component: SignupComponent },
       { path: 'login', component: LoginComponent },
+      { path: 'main-home', component: MainHomeComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },

@@ -40,9 +40,10 @@ export class PasswordRecoveryComponent implements OnInit {
       userId: this.userId,
       newPassword: f.controls.newPassword.value
     }
+    console.log(this.authToken)
 
     this.appService.editUserPassword(data).subscribe((apiResult) => {
-      if (apiResult === 200) {
+      if (apiResult.status === 200) {
         this.toastr.success(apiResult.message)
         setTimeout(() => {
           this.goToLogin();

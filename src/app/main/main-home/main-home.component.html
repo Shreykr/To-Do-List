@@ -1,0 +1,109 @@
+<div class="topnav">
+    <span class="navbar-icon ml-3" (click)="toggleNav()" data-toggle="tooltip-topNav"
+        title="Press m to toggle">&#9776;</span>
+</div>
+<div id="sidenav" class="sidenav-collapse">
+    <div class="container-fluid">
+        <div class="create mt-2">
+            <button type="button" class="btn create-button" data-toggle="modal" data-target="#projectModal">
+                Create Project +
+            </button>
+        </div>
+        <div id="toggleButton" class="btn-group  mt-5">
+            <button type="button" class="btn btn-success dropdown-toggle projects-button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                Projects
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <div class="container form-content" [formGroup]="mainProjectForm">
+                    <div class="row" formArrayName="mainProjectList">
+                        <div class="created">
+                            <div class="form-group row" *ngFor="let list of getMainProjectList(); let i = index">
+                                <input type="button" class="btn project-button-list" value="{{i+1}}. {{list.value}}">
+                                <hr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="friends">
+            <button type="button" class="btn friends-button">
+                Friends
+            </button>
+        </div>
+        <div class="notifications mt-4">
+            <button type="button" class="btn btn-warning notifications-button mr-1">
+                Notifications
+            </button>
+            <span [ngClass]="" class="active-dot"></span>
+        </div>
+        <div class="logout mt-4 mb-3">
+            <button type="button" class="btn btn-danger logout-button">
+                Logout
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="main-content" class="main-content">
+    <div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" class="form-control" [ngClass]="{
+                                'has-danger': ((projectModalForm.get('projectName').invalid && projectModalForm.get('projectName').dirty)||(projectModalForm.get('projectName').touched && projectModalForm.get('projectName').pristine)), 
+                                'has-success': projectModalForm.get('projectName').valid && projectModalForm.get('projectName').dirty
+                              }" formControlName="projectName" data-toggle="tooltip"
+                                title="Maximum 15 alphanumeric characters">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
+                            class="btn btn-primary">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="sub-content">
+        <div class="row">
+            <div class="col-sm-2 created-heading">
+                <h5>Your Lists:</h5>
+            </div>
+            <div class="col-sm-9">
+                <div class="created-list">
+                    <div class="form-group row" *ngFor="">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10">
+                <div class="deleted">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
+                    tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
+                    eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,
+                    sed gravida arcu fermentum. Aliquam suscipit enim et ipsum luctus, vitae viverra tortor
+                    dignissim. Nam ut velit nibh. Donec eget rhoncus nibh, in mollis neque. Pellentesque dignissim,
+                    urna a pharetra pulvinar, dolor tellus semper felis, vel posuere turpis nisl sit amet odio.
+                    Etiam id imperdiet odio. Praesent tristique tellus sed libero vehicula, nec mattis neque
+                    maximus. Mauris neque quam, pretium sed elit ut, faucibus placerat justo. Aliquam erat volutpat.
+                    In sit amet felis sit amet eros efficitur lacinia in eget dui.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
   }
 
   public goToApp = (): any => {
-    this.router.navigate(['/home'])
+    this.router.navigate(['/main-home'])
   }
 
   sendRecoveryMail() {

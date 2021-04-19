@@ -100,6 +100,7 @@ button{
 .has-success{
   border: 2px solid green;
 }
+
 @media screen and (width:576px){
   .button-group{
     flex-flow: row nowrap;
