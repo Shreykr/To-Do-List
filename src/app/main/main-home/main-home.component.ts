@@ -34,6 +34,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
   public populateDropdown: boolean;
   public flagDropdown = 1;
   public projectNamesList: any = [];
+  public flagItemList = 1;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
