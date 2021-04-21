@@ -18,9 +18,15 @@
                 <div class="container form-content" [formGroup]="mainProjectForm">
                     <div class="row" formArrayName="mainProjectList">
                         <div class="created">
-                            <div class="form-group row" *ngFor="let list of getMainProjectList(); let i = index">
-                                <input type="button" class="btn project-button-list" value="{{i+1}}. {{list.value}}">
-                                <hr>
+                            <div class="form-group row" *ngIf="!flagDropdown">
+                                <input type="button" class="btn btn-primary project-button-list"
+                                    value="There are no projects">
+                            </div>
+                            <div *ngIf="flagDropdown">
+                                <div class="form-group row" *ngFor="let list of getMainProjectList(); let i = index">
+                                    <input type="button" class="btn btn-primary project-button-list"
+                                        value="{{list.value}}">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -77,22 +83,59 @@
         </div>
     </div>
     <div class="sub-content">
-        <div class="row">
+        <div class="row top">
             <div class="col-sm-2 created-heading">
-                <h5>Your Lists:</h5>
+                <h5>Your Tasks:</h5>
             </div>
             <div class="col-sm-9">
                 <div class="created-list">
-                    <div class="form-group row" *ngFor="">
-                    </div>
+                    <!-- <div class="form-group row" *ngFor=""> -->
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
+                    tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
+                    eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,
+                    sed gravida arcu fermentum. Aliquam suscipit enim et ipsum luctus, vitae viverra tortor
+                    dignissim. Nam ut velit nibh. Donec eget rhoncus nibh, in mollis neque. Pellentesque dignissim,
+                    urna a pharetra pulvinar, dolor tellus semper felis, vel posuere turpis nisl sit amet odio.
+                    Etiam id imperdiet odio. Praesent tristique tellus sed libero vehicula, nec mattis neque
+                    maximus. Mauris neque quam, pretium sed elit ut, faucibus placerat justo. Aliquam erat volutpat.
+                    In sit amet felis sit amet eros efficitur lacinia in eget dui.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
+                    tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
+                    eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,
+                    sed gravida arcu fermentum. Aliquam suscipit enim et ipsum luctus, vitae viverra tortor
+                    dignissim. Nam ut velit nibh. Donec eget rhoncus nibh, in mollis neque. Pellentesque dignissim,
+                    urna a pharetra pulvinar, dolor tellus semper felis, vel posuere turpis nisl sit amet odio.
+                    Etiam id imperdiet odio. Praesent tristique tellus sed libero vehicula, nec mattis neque
+                    maximus. Mauris neque quam, pretium sed elit ut, faucibus placerat justo. Aliquam erat volutpat.
+                    In sit amet felis sit amet eros efficitur lacinia in eget dui.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
+                    tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
+                    eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,
+                    sed gravida arcu fermentum. Aliquam suscipit enim et ipsum luctus, vitae viverra tortor
+                    dignissim. Nam ut velit nibh. Donec eget rhoncus nibh, in mollis neque. Pellentesque dignissim,
+                    urna a pharetra pulvinar, dolor tellus semper felis, vel posuere turpis nisl sit amet odio.
+                    Etiam id imperdiet odio. Praesent tristique tellus sed libero vehicula, nec mattis neque
+                    maximus. Mauris neque quam, pretium sed elit ut, faucibus placerat justo. Aliquam erat volutpat.
+                    In sit amet felis sit amet eros efficitur lacinia in eget dui.
+                    <!-- </div> -->
                 </div>
             </div>
         </div>
-        <hr />
-        <div class="row">
-            <div class="col-sm-1"></div>
-            <div class="col-sm-10">
+        <div class="row bottom">
+            <div class="col-sm-2 deleted-heading">
+                <h5>Completed:</h5>
+            </div>
+            <div class="col-sm-9">
                 <div class="deleted">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
+                    tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
+                    eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,
+                    sed gravida arcu fermentum. Aliquam suscipit enim et ipsum luctus, vitae viverra tortor
+                    dignissim. Nam ut velit nibh. Donec eget rhoncus nibh, in mollis neque. Pellentesque dignissim,
+                    urna a pharetra pulvinar, dolor tellus semper felis, vel posuere turpis nisl sit amet odio.
+                    Etiam id imperdiet odio. Praesent tristique tellus sed libero vehicula, nec mattis neque
+                    maximus. Mauris neque quam, pretium sed elit ut, faucibus placerat justo. Aliquam erat volutpat.
+                    In sit amet felis sit amet eros efficitur lacinia in eget dui.
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit molestie neque, quis
                     tincidunt lacus rutrum ac. Nunc at nulla posuere purus tristique congue. Donec ex velit, feugiat
                     eget interdum gravida, finibus ut ligula. Phasellus scelerisque ligula vel nulla sollicitudin,

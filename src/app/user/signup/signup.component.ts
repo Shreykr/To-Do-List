@@ -16,7 +16,7 @@ export class SignupComponent implements OnInit {
   profileSignupForm = new FormGroup({
 
     userFirstName: new FormControl(null, [Validators.required, Validators.pattern("([a-zA-Z]{2,30}\s*)+")]),
-    userLastName: new FormControl(null, [Validators.pattern("([a-zA-Z]{2,30}\s*)+")]),
+    userLastName: new FormControl(null, [Validators.pattern("([a-zA-Z]{1,30}\s*)+")]),
     userMobileNumber: new FormControl(null, [Validators.required, Validators.pattern("^[1-9][0-9]{5,15}$")]),
     userCountry: new FormControl(null, [Validators.required]),
     userMail: new FormControl(null, [Validators.required, Validators.pattern("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$")]),

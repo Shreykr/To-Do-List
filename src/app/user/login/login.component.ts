@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AppService } from './../../app.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { Cookie } from 'ng2-cookies/ng2-cookies'
 import * as $ from 'jquery';
 
 
@@ -31,10 +32,6 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  public goToApp = (): any => {
-    this.router.navigate(['/main-home'])
-  }
-
   sendRecoveryMail() {
     let data = {
       email: this.profileLoginForm.controls.userLoginMail.value
@@ -44,7 +41,6 @@ export class LoginComponent implements OnInit {
         this.toastr.success(apiResult.message);
       }
       else {
-        console.log(1)
         this.toastr.error(apiResult.message);
       }
     }, (err) => {
@@ -67,11 +63,12 @@ export class LoginComponent implements OnInit {
 
       if (apiResult.status === 200) {
         this.toastr.success(apiResult.message);
-        setTimeout(() => {
-          this.goToApp();
-        }, 2000);
+        Cookie.set('authtoken', apiResult.data.authToken);
+        Cookie.set('mainUserId', apiResult.data.userDetails.userId);
+        this.appService.setUserInfoInLocalStorage(apiResult.data.userDetails)
+
+        this.router.navigate(['/main-home']);
       } else {
-        console.log(2)
         this.toastr.error(apiResult.message)
       }
     }, (err) => {

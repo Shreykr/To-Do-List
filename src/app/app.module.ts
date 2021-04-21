@@ -5,6 +5,7 @@ import { LoginComponent } from './user/login/login.component';
 import { AppComponent } from './app.component';
 import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component'
 import { MainHomeComponent } from './main/main-home/main-home.component';
+
 //Modules
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppService } from './app.service';
+import { MainService } from './main.service';
 @NgModule({
   declarations: [
     AppComponent,
@@ -41,7 +43,7 @@ import { AppService } from './app.service';
       { path: '**', component: HomeComponent }
     ])
   ],
-  providers: [AppService],
+  providers: [AppService, MainService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

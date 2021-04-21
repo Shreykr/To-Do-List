@@ -30,7 +30,7 @@
     width: 200px;
     position: absolute;
     z-index: 1;
-    background-color: rgb(52,58,64);
+    background-color: rgb(70, 78, 85);
     transition: 0.5s;
     overflow-x: hidden;
     overflow-y: scroll;
@@ -52,7 +52,7 @@
 }
 
 .dropdown-menu{
-    background-color:rgb(62, 68, 75);  
+    background-color:rgb(62, 68, 75);
     height:200px;
     border-radius: 5px;
     color: white;
@@ -72,7 +72,8 @@
 
 .project-button-list{
     width:100%;
-    background-color:rgb(62,68,75) ;
+    color:white;
+    border-radius: 5px;
 }
 
 .projects-button{
@@ -80,10 +81,21 @@
  }
 
 .form-content{
+    
     background-color:rgb(62, 68, 75);  
     height:250px;
     color: white;  
 }
+
+.created{
+    padding: 4px;
+    width:100%;
+    height:275px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    text-align: center;
+}
+
 
   
 
@@ -167,8 +179,18 @@
     padding: 16px;
     text-align:left;
     display:flex;
+    flex-flow: column;
     overflow-y:scroll;
-    flex-direction: column;
+    border: 2px solid black;
+    
+}
+
+.top{
+    border-bottom: 2px solid black;
+}
+
+.bottom{
+    border-bottom: 2px solid black;
 }
 
 .created-heading{
@@ -176,19 +198,16 @@
     text-align: center;
 }
 
-.created{
+.created-list{    
     width:100%;
-    height:275px;
+    height:245px;
     overflow-y: scroll;
     overflow-x: hidden;
 }
 
-.created-list{
-    border: 2px solid black;
-    width:100%;
-    height:275px;
-    overflow-y: scroll;
-    overflow-x: hidden;
+.deleted-heading{
+    padding:1rem;
+    text-align: center;
 }
 
 .deleted{
@@ -210,9 +229,6 @@
         
         opacity:1;
         width: 0px;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
     }    
 }
 

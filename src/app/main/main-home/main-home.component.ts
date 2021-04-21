@@ -1,5 +1,11 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
+import { AppService } from './../../app.service';
+import { MainService } from './../../main.service';
+import { Cookie } from 'ng2-cookies/ng2-cookies';
+import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { CheckUser } from './../../CheckUser';
 import * as $ from 'jquery';
 
 declare const openNavgationBarv1: any;
@@ -13,12 +19,21 @@ declare const destroyModal: any;
   templateUrl: './main-home.component.html',
   styleUrls: ['./main-home.component.css']
 })
-export class MainHomeComponent implements OnInit {
+export class MainHomeComponent implements OnInit, CheckUser {
 
   scrHeight = window.innerHeight;
   scrWidth = window.innerWidth;
 
   public key: any;
+  public toggle_1: any = 0;
+  public toggle_2: any = 0;
+  public flag = 0;
+  public projectValue: any;
+  public authToken: any;
+  public userInfo: any;
+  public populateDropdown: boolean;
+  public flagDropdown = 1;
+  public projectNamesList: any = [];
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -33,24 +48,25 @@ export class MainHomeComponent implements OnInit {
     }
   }
 
-  public toggle_1: any = 0;
-  public toggle_2: any = 0;
-  public flag = 0;
-  public projectValue: any;
-
+  //Form group for project name
   projectModalForm = new FormGroup({
     'projectName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
   })
 
+  // Form Arry for the project list
   mainProjectForm = new FormGroup({
     'mainProjectList': new FormArray([])
   })
 
   constructor(
-
+    public router: Router,
+    public appService: AppService,
+    public mainService: MainService,
+    public toastr: ToastrService
   ) { this.getScreenSize(); }
 
   ngOnInit(): void {
+    // logic for implementing different sidebars depend on screen size.
     if (this.scrWidth <= 750) {
       this.toggle_2 = 1;
       this.flag = 1;
@@ -60,22 +76,54 @@ export class MainHomeComponent implements OnInit {
       this.toggle_1 = 1;
     }
 
+    this.authToken = Cookie.get('authtoken');
+    this.userInfo = this.appService.getUserInfoFromLocalstorage();
+
+    // checking the user
+    this.checkStatus();
+
+    // getting all the project lists
+    this.getProjectList()
   }
 
-  onSubmitForm(f) {
-    console.log(f);
+  public checkStatus: any = () => {
+    if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
+      this.router.navigate(['/']);
+      return false;
+    } else {
+      return true;
+    }
+  } //end of check status
+
+  getProjectList() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.mainService.getProjectList(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        console.log(apiResult.data.projects[0])
+        if (apiResult.data.projects.length === 0) {
+          this.flagDropdown = 0;
+        }
+        else {
+          this.flagDropdown = 1;
+          for (let projectNames of apiResult.data.projects) {
+            this.projectNamesList.push(projectNames.name)
+          }
+          for (let names of this.projectNamesList) {
+            this.addMainProjectList(names);
+          }
+        }
+
+        this.toastr.success(apiResult.message)
+      } else {
+        this.toastr.error(apiResult.message)
+      }
+    }, (err) => {
+      this.toastr.error("Some Error Occured");
+    })
   }
-
-  mainModalFormSubmit() {
-    console.log(1)
-    this.projectValue = this.projectModalForm.controls.projectName.value;
-    console.log(this.projectValue);
-    this.addMainProjectList(this.projectValue);
-    this.destroysProfileModal();
-
-    // Subscribe to api call to update project list on backend.
-  }
-
   addMainProjectList(value) {
     const control = new FormControl(value);
     (<FormArray>this.mainProjectForm.get('mainProjectList')).push(control);
@@ -86,34 +134,23 @@ export class MainHomeComponent implements OnInit {
   }
 
   toggleNav() {
-    console.log(`toggle_1: ${this.toggle_1}`)
-    console.log(`toggle_2: ${this.toggle_2}`)
-
     if (this.toggle_1 === 1 && this.flag === 0) {
-      console.log(1);
       this.closeNav_1();
       this.toggle_1 = 0;
     }
     else if (this.toggle_2 === 1 && this.flag === 1) {
-      console.log(2);
       this.openNav_2();
       this.toggle_2 = 0;
     }
     else if (this.toggle_1 === 0 && this.flag === 0) {
-      console.log(3);
       this.openNav_1();
       this.toggle_1 = 1;
     }
     else if (this.toggle_2 === 0 && this.flag === 1) {
-      console.log(4);
       this.closeNav_2();
       this.toggle_2 = 1;
     }
-    console.log(`toggle_1: ${this.toggle_1}`)
-    console.log(`toggle_2: ${this.toggle_2}`)
-
   }
-
   openNav_1() {
     openNavgationBarv1();
   }
@@ -129,8 +166,33 @@ export class MainHomeComponent implements OnInit {
   }
 
   destroysProfileModal() {
-    console.log("gg")
     destroyModal();
+  }
+
+  // receiving project name in modal.
+  mainModalFormSubmit() {
+    // this.projectValue = this.projectModalForm.controls.projectName.value;
+    // this.addMainProjectList(this.projectValue);
+    this.destroysProfileModal();
+
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken,
+      projectName: this.projectValue,
+    }
+
+    this.mainService.addNewProjectList(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.flagDropdown = 1;
+        this.toastr.success(apiResult.message)
+        this.getProjectList();
+      } else {
+        this.toastr.error(apiResult.message)
+      }
+    }, (err) => {
+      this.toastr.error("Some Error Occured");
+    })
+
   }
 
 }

@@ -77,18 +77,14 @@ export class AppService {
   } //end of logout function
 
   private handleErrorFunction(err: HttpErrorResponse) {
-
     let errorMessage = '';
     if (err.error instanceof Error) {
       errorMessage = `An error occurred: ${err.error.message}`;
     } else {
       errorMessage = `Server returned code: ${err.status}, error message is: ${err.message}`;
-    } // end of if condition
-
+    }
     console.error(errorMessage);
-
     return Observable.throw(errorMessage);
-
-  }  // end of handleError function
+  }
 }
 
