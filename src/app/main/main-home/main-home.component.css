@@ -15,11 +15,6 @@
     height:55px;
 }
 
-/* .topnav a{
-    text-decoration: none;
-    text-align: right;
-} */
-
 .navbar-icon{
     color:white;
     font-size:30px;
@@ -46,20 +41,12 @@
 }
 
 .create-button{
+    top:30px;
     background-color: #6b05a7;
     width: 145px;
     color:white;
 }
 
-.dropdown-menu{
-    background-color:rgb(62, 68, 75);
-    height:200px;
-    border-radius: 5px;
-    color: white;
-    overflow-y:scroll ;
-    transition: 0.4s;
-    animation: expand 0.3s;
-  }
 
 @keyframes expand{
     0%{
@@ -69,33 +56,6 @@
         height:200px
     }
 }
-
-.project-button-list{
-    width:100%;
-    color:white;
-    border-radius: 5px;
-}
-
-.projects-button{
-    width:140px; 
- }
-
-.form-content{
-    
-    background-color:rgb(62, 68, 75);  
-    height:250px;
-    color: white;  
-}
-
-.created{
-    padding: 4px;
-    width:100%;
-    height:275px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    text-align: center;
-}
-
 
   
 
@@ -112,14 +72,8 @@
     background: rgb(90, 97, 105); 
 }
 
-
-.important-todo{
-    margin-top: 16rem;
-    width:fit-content;
-}
-
 .friends{
-    margin-top: 13rem;
+    margin-top: 5rem;
     width:fit-content;
 }
 
@@ -162,71 +116,34 @@
 }
 
 
-.main-content { 
+.main-content {
     position:relative;
     margin-top:20px;
     margin-left:200px;
-    overflow-y: scroll;
     transition: margin-left .5s;	
     padding: 3px;	
 }
 
 .sub-content{
-    height:500px;
+    max-height:500px;
     width:100%;
     position:relative;
     margin-top:20px;	
     transition: margin-left .5s;	
-    padding: 16px;
+    padding: 20px;
     text-align:left;
     display:flex;
     flex-flow: column;
-    border: 2px solid black;
-    
-}
-
-.top{
-    border-bottom: 2px solid black;
-}
-
-.button-group{
-     width:100%;
-    display: flex;
-    flex-flow:row nowrap;
-    margin-top:1rem;
-    margin-bottom:1rem;
-    margin-right:0.25rem;      
-  }
-
-.bottom{
-    border-top: 2px solid black;
-}
-
-.created-heading{
-    padding:1rem;
-    text-align: center;
-}
-
-.created-list{    
-    width:100%;
-    height:245px;
-    padding:20px;
     overflow-y: scroll;
-    overflow-x: hidden;
+    border: 2px solid black;    
 }
 
-.deleted-heading{
-    padding:1rem;
-    text-align: center;
+.project-heading{
+    text-align:center;
+    margin-bottom:2.5rem;
 }
 
-.deleted{
-    width:100%;
-    height:175px;
-    padding:20px;
-    overflow-y: scroll;
-}
-  
+
 @media screen and (max-height: 450px) {
     .sidenav-collapse {padding-top: 15px;}
     .sidenav-collapse a {font-size: 18px;}
@@ -234,8 +151,8 @@
 
 @media screen and (min-height:900px){
     .sub-content{
-        height:700px;
-    }
+        height:600px;
+    }   
 }
 
 @media screen and (max-width:576px){
@@ -259,6 +176,15 @@
     }    
 }
 
+.card-columns {
+    @include media-breakpoint-only(lg) {
+      column-count: 4;
+    }
+    @include media-breakpoint-only(xl) {
+      column-count: 5;
+    }
+  }
+
 .has-danger{
     border: 2px solid red;
   }
@@ -266,3 +192,4 @@
   .has-success{
     border: 2px solid green;
   }
+

@@ -16,20 +16,15 @@
   <script>
     $(document).ready(function () {
 
-      setTimeout(function () { $('[data-toggle="tooltip-topNav"]').tooltip('hide'); }, 0000);
+      setTimeout(function () { $('[data-toggle="tooltip-topNav"]').tooltip('hide'); }, 3000);
       $('[data-toggle="tooltip-topNav"]').tooltip('hide').mouseover();
+
+      // $('[data-toggle="tooltip-topNav"]').tooltip().click();
+      // setTimeout(function () { $('[data-toggle="tooltip-topNav"]').tooltip('hide'); }, 3000);
 
       setTimeout(function () {
         $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
       }, 5000)
-
-
-
-      // $('#toggleButton').on('hide.bs.dropdown', function (e) {
-      //   if (e.clickEvent) {
-      //     e.preventDefault();
-      //   }
-      // }); // prevents hiding the dropdown when touched anywhere 
     });
   </script>
 </body>

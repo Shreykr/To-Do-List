@@ -30,7 +30,14 @@ export class MainService {
       .set('authToken', data.authToken)
       .set('projectName', data.projectName)
 
-    return this.http.post(`${this.url}/api/v1/main/addNewProjectList`, params)
+    return this.http.post(`${this.url}/api/v1/main/add-project`, params)
+  }
+
+  public getItemList(data): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', data.userId)
+      .set('authToken', data.authToken)
+    return this.http.post(`${this.url}/api/v1/main/view/single`, params)
   }
 
 
