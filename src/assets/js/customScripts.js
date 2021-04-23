@@ -9,7 +9,9 @@ function openNavgationBarv1() {
 }
 
 function openNavgationBarv2(width,height) {
+  var marginWidth = width/3.5;
   document.getElementById("sidenav").style.width = width+"px";
+  document.getElementById("sidenav-buttons").style.paddingLeft= marginWidth+"px";
   document.getElementById("sidenav").style.height = height+"px";
 }
 
@@ -19,4 +21,8 @@ function closeNavigationBarv2() {
 
 function destroyModal(){
   $('#projectModal').modal('hide')
+
+  $('#taskModal').modal('hide')
+
+  $('#subTaskModal').modal('hide')
 }

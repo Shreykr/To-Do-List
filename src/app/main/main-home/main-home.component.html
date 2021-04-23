@@ -74,12 +74,15 @@
         </div>
         <div class="row">
             <div *ngFor="let project of projectNamesList" class="col-sm-4">
-                <div class="card text-center text-white bg-dark mb-3" style="max-width: 30rem;min-height:11rem;">
+                <div class="card text-center text-white bg-dark mb-3"
+                    style="max-width: 30rem;height:11rem;border-radius:10px;">
                     <div class="card-body">
                         <h5 class="card-title">{{project}}</h5>
                     </div>
                     <div class="card-footer text-muted footer">
-                        <button class="btn btn-danger btn-md btn-block">View Tasks</button>
+                        <button class="btn btn-danger btn-md btn-block" (click)="goToViewTask(project)">View
+                            Tasks
+                        </button>
                     </div>
                 </div>
             </div>

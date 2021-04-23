@@ -40,5 +40,15 @@ export class MainService {
     return this.http.post(`${this.url}/api/v1/main/view/single`, params)
   }
 
+  public addNewItemToProject(data): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', data.userId)
+      .set('authToken', data.authToken)
+      .set('projectName', data.projectName)
+      .set('itemName', data.itemName)
+
+    return this.http.post(`${this.url}/api/v1/main/add-item`, params)
+  }
+
 
 }

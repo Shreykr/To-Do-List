@@ -3,7 +3,8 @@ import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
 import { AppService } from './../../app.service';
 import { MainService } from './../../main.service';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { CheckUser } from './../../CheckUser';
 import * as $ from 'jquery';
@@ -14,35 +15,31 @@ declare const openNavgationBarv2: any;
 declare const closeNavigationBarv2: any;
 declare const destroyModal: any;
 
+
 @Component({
-  selector: 'app-main-home',
-  templateUrl: './main-home.component.html',
-  styleUrls: ['./main-home.component.css']
+  selector: 'app-view-task',
+  templateUrl: './view-task.component.html',
+  styleUrls: ['./view-task.component.css']
 })
-export class MainHomeComponent implements OnInit, CheckUser {
+export class ViewTaskComponent implements OnInit, CheckUser {
 
   scrHeight = window.innerHeight;
   scrWidth = window.innerWidth;
 
   //main values
+  public key: any;
   public projectName;
   public itemName: any;
-  public status: any;
-  public subItems: any;
-  public projectNamesList: any = [];
+  public subItemName: any;
   public itemNamesList: any = [];
   public subItemsList: any = [];
-  public key: any;
+  public status: any;
   public toggle_1: any = 0;
   public toggle_2: any = 0;
+  public toggleMainMessage = 0;
   public flag = 0;
-  public projectValue: any;
   public authToken: any;
   public userInfo: any;
-  public populateDropdown: boolean;
-  public toggleMainMessage = 0;
-  public flagItemList = 0;
-  public toggleProjectButtons = 0;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -58,12 +55,18 @@ export class MainHomeComponent implements OnInit, CheckUser {
   }
 
   //Form group for project name
-  projectModalForm = new FormGroup({
-    'projectName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+  itemModalForm = new FormGroup({
+    'itemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+  })
+
+  subItemModalForm = new FormGroup({
+    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
   })
 
   constructor(
+    public _route: ActivatedRoute,
     public router: Router,
+    private location: Location,
     public appService: AppService,
     public mainService: MainService,
     public toastr: ToastrService
@@ -81,12 +84,13 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }
     this.authToken = Cookie.get('authtoken');
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
+    this.projectName = this._route.snapshot.paramMap.get('projectName')
 
     // checking the user
     this.checkStatus();
 
     // getting all the project lists
-    this.getProjectLists()
+    this.getItemList()
   }
 
   public checkStatus: any = () => {
@@ -98,49 +102,45 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }
   } //end of check status
 
+  public goToMainHome() {
+    this.location.back();
+  }
+
   // Function to execute when create project is selected and submitted.
-  getProjectLists() {
+  getItemList() {
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken
     }
-    this.mainService.getProjectList(data).subscribe((apiResult) => {
+    this.mainService.getItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        if (apiResult.data.projects.length === 0) {
-          this.toggleMainMessage = 0;
-        }
-        else {
-          this.toggleMainMessage = 1;
-          for (let projectNames of apiResult.data.projects) {
-            this.projectNamesList.push(projectNames.name)
+        console.log(apiResult)
+        for (let i in apiResult.data.projects) {
+          for (let j in apiResult.data.projects[i].items) {
+            if (apiResult.data.projects[i].name === this.projectName) {
+              this.itemNamesList.push(apiResult.data.projects[i].items[j].itemName)
+              console.log(this.itemNamesList)
+              if (apiResult.data.projects[i].items.length === 0) {
+                this.toggleMainMessage = 0;
+                break;
+              }
+              else {
+                this.toggleMainMessage = 1;
+                if (apiResult.data.projects[i].items[j].sub_items.length !== 0) {
+                  for (let subItems of apiResult.data.project[i].items[j].sub_items) {
+                    this.subItemsList.push(subItems);
+                  }
+                }
+              }
+            }
+            else {
+              continue;
+            }
+          }
+          if (apiResult.data.projects[i].name === this.projectName) {
+            this.toastr.success("Tasks updated!")
           }
         }
-        if (apiResult.data.projects.length !== 0) {
-          this.toastr.success(apiResult.message)
-        }
-      } else {
-        //this.toastr.error(apiResult.message)
-      }
-    }, (err) => {
-      this.toastr.error("Some Error Occured");
-    })
-  }// end of getProjectLists function
-
-  // receiving project name in modal.
-  mainModalFormSubmit() {
-    this.projectValue = this.projectModalForm.controls.projectName.value;
-    this.destroysProfileModal();
-
-    let data = {
-      userId: this.userInfo.userId,
-      authToken: this.authToken,
-      projectName: this.projectValue
-    }
-    this.mainService.addNewProjectList(data).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        this.toggleMainMessage = 1;
-        this.toastr.success(apiResult.message)
-        this.projectNamesList.push(this.projectValue)
       } else {
         this.toastr.error(apiResult.message)
       }
@@ -149,8 +149,29 @@ export class MainHomeComponent implements OnInit, CheckUser {
     })
   }
 
-  goToViewTask(projectNameSelected) {
-    this.router.navigate(['/view-task', projectNameSelected])
+  // receiving project name in modal.
+  itemModalFormSubmit() {
+    this.itemName = this.itemModalForm.controls.itemName.value;
+
+    this.destroysItemModal();
+
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken,
+      projectName: this.projectName,
+      itemName: this.itemName
+    }
+    this.mainService.addNewItemToProject(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toggleMainMessage = 1;
+        this.itemNamesList.push(this.itemName)
+        this.toastr.success(apiResult.message)
+      } else {
+        this.toastr.error(apiResult.message)
+      }
+    }, (err) => {
+      this.toastr.error("Some Error Occured");
+    })
   }
 
   toggleNav() {
@@ -183,7 +204,9 @@ export class MainHomeComponent implements OnInit, CheckUser {
   closeNav_2() {
     closeNavigationBarv2();
   }
-  destroysProfileModal() {
+
+  destroysItemModal() {
     destroyModal();
   }
+
 }

@@ -5,6 +5,7 @@ import { LoginComponent } from './user/login/login.component';
 import { AppComponent } from './app.component';
 import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component'
 import { MainHomeComponent } from './main/main-home/main-home.component';
+import { ViewTaskComponent } from './main/view-task/view-task.component'
 
 //Modules
 import { NgModule } from '@angular/core';
@@ -24,7 +25,8 @@ import { MainService } from './main.service';
     HomeComponent,
     LoginComponent,
     PasswordRecoveryComponent,
-    MainHomeComponent
+    MainHomeComponent,
+    ViewTaskComponent
   ],
   imports: [
     BrowserModule,
@@ -37,6 +39,7 @@ import { MainService } from './main.service';
       { path: 'signup', component: SignupComponent },
       { path: 'login', component: LoginComponent },
       { path: 'main-home', component: MainHomeComponent },
+      { path: 'view-task/:projectName', component: ViewTaskComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },
