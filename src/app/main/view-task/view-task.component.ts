@@ -58,15 +58,15 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
   //Form group for project name
   itemModalForm = new FormGroup({
-    'itemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+    'itemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,25}$')])
   })
 
   subItemModalForm = new FormGroup({
-    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,15}$')])
   })
 
   editItemModalForm = new FormGroup({
-    'editItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+    'editItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,25}$')])
   })
 
   constructor(
@@ -150,9 +150,9 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
-        this.toastr.success("Tasks updated")
+        this.toastr.success("Tasks Updated", '', { timeOut: 1250 })
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -182,9 +182,9 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             }
           }
         }
-        this.toastr.success(apiResult.message)
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -218,12 +218,12 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     }
     this.mainService.updateItemInList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message)
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.subItemsList.splice(0, this.subItemsList.length);
         delete this.subTaskMapping[this.itemName];
         this.updateSubItemsInDom();
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -258,7 +258,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
           }
         }
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -291,7 +291,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
       else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -349,16 +349,13 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             else {
               continue;
             }
-            console.log(this.statusMapping)
-            console.log(this.subTaskMapping)
-            console.log(this.itemNamesList)
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.itemName = newItemName;
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -400,6 +397,25 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       this.toastr.error("Some error occured", '', { timeOut: 1250 })
     })
   }
+
+  // user will be logged out
+  logoutUser() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.appService.logoutFunction(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        Cookie.delete('authtoken');
+        this.router.navigate(['/']);
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    })
+  }
+
 
 
 

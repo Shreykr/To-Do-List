@@ -47,7 +47,6 @@
     color:white;
 }
 
-
 @keyframes expand{
     0%{
         height:5px
@@ -56,9 +55,7 @@
         height:200px
     }
 }
-
   
-
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -70,17 +67,6 @@
   
 ::-webkit-scrollbar-thumb:hover {
     background: rgb(90, 97, 105); 
-}
-
-.friends{
-    margin-top: 5rem;
-    width:fit-content;
-}
-
-.friends-button{
-    background-color: rgb(202, 29, 188);
-    width:140px;
-    color:white;
 }
 
 .notifications{
@@ -151,12 +137,13 @@
 }
 
 .sub-tasks-node{
+    margin:auto;
+    text-align:left;
     min-height:75px;
     max-height:75px;
     margin-bottom:5px;
     overflow-y: scroll;
 }
-
 
 @media screen and (max-height: 450px) {
     .sidenav-collapse {padding-top: 15px;}

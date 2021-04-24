@@ -25,13 +25,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
   scrWidth = window.innerWidth;
 
   //main values
-  public projectName;
-  public itemName: any;
-  public status: any;
-  public subItems: any;
   public projectNamesList: any = [];
-  public itemNamesList: any = [];
-  public subItemsList: any = [];
   public key: any;
   public toggle_1: any = 0;
   public toggle_2: any = 0;
@@ -39,10 +33,9 @@ export class MainHomeComponent implements OnInit, CheckUser {
   public projectValue: any;
   public authToken: any;
   public userInfo: any;
-  public populateDropdown: boolean;
   public toggleMainMessage = 0;
-  public flagItemList = 0;
-  public toggleProjectButtons = 0;
+  public allUserList: any = [];
+  public searchClick = false;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -59,7 +52,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
 
   //Form group for project name
   projectModalForm = new FormGroup({
-    'projectName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9]{1,13}$')])
+    'projectName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,25}$')])
   })
 
   constructor(
@@ -89,6 +82,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     this.getProjectLists()
   }
 
+  // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
       this.router.navigate(['/']);
@@ -98,7 +92,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }
   } //end of check status
 
-  // Function to execute when create project is selected and submitted.
+  // function to execute when create project is selected and submitted.
   getProjectLists() {
     let data = {
       userId: this.userInfo.userId,
@@ -116,13 +110,13 @@ export class MainHomeComponent implements OnInit, CheckUser {
           }
         }
         if (apiResult.data.projects.length !== 0) {
-          this.toastr.success(apiResult.message)
+          this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         }
       } else {
         //this.toastr.error(apiResult.message)
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
     })
   }// end of getProjectLists function
 
@@ -139,20 +133,59 @@ export class MainHomeComponent implements OnInit, CheckUser {
     this.mainService.addNewProjectList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.toggleMainMessage = 1;
-        this.toastr.success(apiResult.message)
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.projectNamesList.push(this.projectValue)
       } else {
-        this.toastr.error(apiResult.message)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
   }
 
+  // navigate to view task component
   goToViewTask(projectNameSelected) {
     this.router.navigate(['/view-task', projectNameSelected])
   }
 
+  getAllUsers() {
+    this.appService.getSpecificUsersDetails().subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        var tempList = []
+        for (let i of apiResult.data) {
+          tempList.push(i)
+          this.allUserList = [...new Set(tempList)]
+        }
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    }, (err) => {
+      this.toastr.error('Some error occured', '', { timeOut: 1250 })
+    })
+  }
+
+  // user will be logged out
+  logoutUser() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.appService.logoutFunction(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        Cookie.delete('authtoken');
+        this.router.navigate(['/']);
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    })
+  }
+
+  // logic to change sidebar position based on screen width
+  // requires screen refresh after changing to screen size < 750px width.
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();

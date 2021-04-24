@@ -15,11 +15,6 @@
                 Add Task +
             </button>
         </div>
-        <div class="friends mt-5">
-            <button type="button" class="btn friends-button">
-                Friends
-            </button>
-        </div>
         <div class="notifications mt-5">
             <button type="button" class="btn btn-warning notifications-button mr-1">
                 Notifications
@@ -27,7 +22,7 @@
             <span [ngClass]="" class="active-dot"></span>
         </div>
         <div class="logout mt-5 mb-3">
-            <button type="button" class="btn btn-danger logout-button">
+            <button type="button" class="btn btn-danger logout-button" (click)="logoutUser()">
                 Logout
             </button>
         </div>
@@ -146,7 +141,7 @@
                   }" style="max-width: 30rem;border-radius:10px;">
                     <div class="card-body">
                         <h5 class="card-title">{{item}}</h5>
-                        <div class="sub-tasks-node w-50 mx-5">
+                        <div class="sub-tasks-node w-50">
                             <ul *ngFor="let subTask of subTaskMapping[item]; let i = index">
                                 <li>{{subTask}}</li>
                             </ul>

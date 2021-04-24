@@ -69,9 +69,14 @@ export class AppService {
     return this.http.post(`${this.url}/api/v1/users/send-mail`, params);
   } //end of login function
 
-  public logoutFunction(): Observable<any> {
+  public getSpecificUsersDetails(): Observable<any> {
+    return this.http.get(`${this.url}/api/v1/users/view/all-users`);
+  }
+
+  public logoutFunction(data): Observable<any> {
     const params = new HttpParams()
-      .set('authToken', Cookie.get('authToken'))
+      .set('userId', data.userId)
+      .set('authToken', data.authToken)
 
     return this.http.post(`${this.url}/api/v1/users/logout`, params);
   } //end of logout function

@@ -1,13 +1,13 @@
 /* Alternative way to debug is using this*/
 
+/* * {
+  border: 1px solid rgb(153, 0, 255) !important;
+}  */
+
 :root{
     font-size:5px;
     margin-top:2px;
 }
-
-/* * {
-  border: 1px solid rgb(153, 0, 255) !important;
-}  */
 
 .topnav{
     position:relative;
@@ -57,19 +57,22 @@
     }
 }
 
-  
+.search{
+    width:fit-content;
+}
 
-::-webkit-scrollbar {
-    width: 8px;
+.search-button{
+    background-color: rgb(9, 173, 146);
+    width:140px;
+    color:white;
 }
-  
-::-webkit-scrollbar-thumb {
-    background: rgb(99, 105, 112); 
-    border-radius: 10px;
+
+.request-button{
+    margin-left:30px;
 }
-  
-::-webkit-scrollbar-thumb:hover {
-    background: rgb(90, 97, 105); 
+
+.user-list button{
+    align-items: right;
 }
 
 .friends{
@@ -88,6 +91,7 @@
     flex-direction: row;
     width:fit-content;
 }
+
 .notifications-button{    
     width:140px;
 }
@@ -99,6 +103,7 @@
     background-color: rgb(0, 199, 0);
     border-radius: 50%;    
 }
+
 .inactive-dot{
     display: inline;
     height: 10px;
@@ -115,13 +120,17 @@
     width:140px;
 }
 
-
 .main-content {
     position:relative;
     margin-top:20px;
     margin-left:200px;
     transition: margin-left .5s;	
     padding: 3px;	
+}
+
+.project-heading{
+    text-align:center;
+    margin-bottom:2.5rem;
 }
 
 .sub-content{
@@ -138,11 +147,18 @@
     /* border: 2px solid black;     */
 }
 
-.project-heading{
-    text-align:center;
-    margin-bottom:2.5rem;
+::-webkit-scrollbar {
+    width: 8px;
 }
-
+  
+::-webkit-scrollbar-thumb {
+    background: rgb(99, 105, 112); 
+    border-radius: 10px;
+}
+  
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(90, 97, 105); 
+}
 
 @media screen and (max-height: 450px) {
     .sidenav-collapse {padding-top: 15px;}
