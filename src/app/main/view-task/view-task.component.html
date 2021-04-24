@@ -48,7 +48,7 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <input type="text" class="form-control" [ngClass]="{
-                                'has-danger': ((itemModalForm.get('itemName').invalid && itemModalForm.get('itemName').dirty)||(itemModalForm.get('itemName').touched && itemModalForm.get('itemName').pristine)), 
+                                'has-danger': ((itemModalForm.get('itemName').invalid && itemModalForm.get('itemName').dirty)||(itemModalForm.get('itemName').touched && itemModalForm.get('itemName').pristine)),
                                 'has-success': itemModalForm.get('itemName').valid && itemModalForm.get('itemName').dirty
                               }" formControlName="itemName" data-toggle="tooltip"
                                 title="Maximum 15 alphanumeric characters">
@@ -74,19 +74,49 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form [formGroup]="itemModalForm" (ngSubmit)="itemModalFormSubmit()">
+                <form [formGroup]="subItemModalForm" (ngSubmit)="subItemModalFormSubmit()">
                     <div class="modal-body">
                         <div class="form-group">
                             <input type="text" class="form-control" [ngClass]="{
-                                'has-danger': ((itemModalForm.get('itemName').invalid && itemModalForm.get('itemName').dirty)||(itemModalForm.get('itemName').touched && itemModalForm.get('itemName').pristine)), 
-                                'has-success': itemModalForm.get('itemName').valid && itemModalForm.get('itemName').dirty
-                              }" formControlName="itemName" data-toggle="tooltip"
+                                'has-danger': ((subItemModalForm.get('subItemName').invalid && subItemModalForm.get('subItemName').dirty)||(subItemModalForm.get('subItemName').touched && subItemModalForm.get('subItemName').pristine)),
+                                'has-success': subItemModalForm.get('subItemName').valid && subItemModalForm.get('subItemName').dirty
+                              }" formControlName="subItemName" data-toggle="tooltip"
                                 title="Maximum 15 alphanumeric characters">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!itemModalForm.get('itemName').valid"
+                        <button type="submit" [disabled]="!subItemModalForm.get('subItemName').valid"
+                            class="btn btn-primary">Apply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCenterTitle">Enter the new Task name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form [formGroup]="editItemModalForm" (ngSubmit)="editItemModalFormSubmit()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" class="form-control" [ngClass]="{
+                                'has-danger': ((editItemModalForm.get('editItemName').invalid && editItemModalForm.get('editItemName').dirty)||(editItemModalForm.get('editItemName').touched && editItemModalForm.get('editItemName').pristine)),
+                                'has-success': editItemModalForm.get('editItemName').valid && editItemModalForm.get('editItemName').dirty
+                              }" formControlName="editItemName" data-toggle="tooltip"
+                                title="Maximum 15 alphanumeric characters">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" [disabled]="!editItemModalForm.get('editItemName').valid"
                             class="btn btn-primary">Apply
                         </button>
                     </div>
@@ -104,28 +134,34 @@
     <div class="sub-content" *ngIf="toggleMainMessage">
         <div class="row ">
             <div class="container task-heading text-center">
-                <h4>Tasks in {{projectName}}</h4>
-
+                <h4>Tasks in
+                    {{projectName}}</h4>
             </div>
         </div>
         <div class="row">
             <div *ngFor="let item of itemNamesList" class="col-sm-4 col-md-6 col-lg-4 col-xl-4">
                 <div class="card text-center text-white bg-dark mb-3 " [ngClass]="{
-                    'has-danger': true, 
-                    'has-success': false
+                    'has-danger': !statusMapping[item],
+                    'has-success': statusMapping[item]
                   }" style="max-width: 30rem;border-radius:10px;">
                     <div class="card-body">
                         <h5 class="card-title">{{item}}</h5>
-                        <div class="sub-tasks-node w-50 mx-auto">
-                            <ul>
+                        <div class="sub-tasks-node w-50 mx-5">
+                            <ul *ngFor="let subTask of subTaskMapping[item]; let i = index">
+                                <li>{{subTask}}</li>
                             </ul>
                         </div>
-                        <button type="button" class="btn btn-warning btn-sm">Add sub-task(s)</button>
+                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
+                            data-target="#subTaskModal" [disabled]="statusMapping[item]" (click)="getItemName(item)">Add
+                            sub-task(s)
+                        </button>
                     </div>
                     <div class="card-footer text-muted footer">
-                        <button type="button" class="btn btn-success">Done</button>
-                        <button type="button" class="btn btn-info">Edit</button>
-                        <button type="button" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-success" [disabled]="statusMapping[item]"
+                            (click)="markedAsDone(item)">Done</button>
+                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#editItemModal"
+                            [disabled]="statusMapping[item]" (click)="getItemName(item)">Edit</button>
+                        <button type=" button" class="btn btn-danger" (click)="deleteTask(item)">Delete</button>
                     </div>
                 </div>
             </div>
