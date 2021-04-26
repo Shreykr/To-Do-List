@@ -27,4 +27,8 @@ function destroyModal(){
   $('#subTaskModal').modal('hide')
 
   $('#editItemModal').modal('hide')
+
+  $('#searchModal').modal('hide')
+
+  $('#notificationModal').modal('hide')
 }

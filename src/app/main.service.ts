@@ -103,4 +103,48 @@ export class MainService {
 
     return this.http.post(`${this.url}/api/v1/main/delete-item`, params)
   }
+
+  public verifyNotification(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('fromId', data.fromId)
+    params = params.set('toId', data.toId)
+    params = params.set('type', data.type)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/notifications-verify`, params)
+  }
+
+  public getAllUserNotifications(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('userId', data.userId)
+    params = params.set('authToken', data.authToken)
+    return this.http.post(`${this.url}/api/v1/main/notifications-user`, params)
+  }
+
+  public checkFriend(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('fromId', data.fromId)
+    params = params.set('toId', data.toId)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/check-friend`, params)
+  }
+
+  public addFriend(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('fromId', data.fromId)
+    params = params.set('toId', data.toId)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/add-friend`, params)
+  }
+
+  public getUserFriendList(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('userId', data.userId)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/user-friends`, params)
+  }
+
 }

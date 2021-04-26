@@ -1,12 +1,13 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
-import { AppService } from './../../app.service';
-import { MainService } from './../../main.service';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { ToastrService } from 'ngx-toastr';
 import { CheckUser } from './../../CheckUser';
+import { AppService } from './../../app.service';
+import { MainService } from './../../main.service';
+import { SocketService } from './../../socket.service';
+import { ToastrService } from 'ngx-toastr';
 import * as $ from 'jquery';
 
 declare const openNavgationBarv1: any;
@@ -14,8 +15,6 @@ declare const closeNavigationBarv1: any;
 declare const openNavgationBarv2: any;
 declare const closeNavigationBarv2: any;
 declare const destroyModal: any;
-
-
 @Component({
   selector: 'app-view-task',
   templateUrl: './view-task.component.html',
@@ -40,8 +39,12 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   public flag = 0;
   public authToken: any;
   public userInfo: any;
-  public statusMapping: any = {}
-  public subTaskMapping: any = {}
+  public statusMapping: any = {};
+  public subTaskMapping: any = {};
+  public notificationsList: any = [];
+  public notificationsMapping: any = {};
+  public notifTrackerList: any = [];
+  public notificationModalFlag: Boolean = false;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -75,6 +78,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     private location: Location,
     public appService: AppService,
     public mainService: MainService,
+    public socketService: SocketService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -108,6 +112,80 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       return true;
     }
   } //end of check status
+
+  // function to receive real time notifications
+  receiveRealTimeNotifications() {
+    this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
+    })
+  }// end of receiveRealTimeNotifications
+
+  //function to get all  the notifications from the db
+  getAllNotifications() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.mainService.getAllUserNotifications(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.notificationModalFlag = true;
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        for (let notifs of apiResult.data) {
+          if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
+            this.notificationsList.push(notifs)
+            this.notifTrackerList.push(notifs.createdOn)
+            this.notificationsMapping[notifs.notificationMessage] = true
+          }
+          else if (!this.notifTrackerList.includes(notifs.createdOn)) {
+            this.notifTrackerList.push(notifs.createdOn)
+            this.notificationsList.push(notifs)
+            this.notificationsMapping[notifs.notificationMessage] = false
+          }
+        }
+        console.log(this.notificationModalFlag)
+        console.log(this.notificationsList)
+        console.log(this.notificationsMapping)
+      }
+      else {
+        this.notificationModalFlag = false;
+        console.log(this.notificationModalFlag)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    }, (err) => {
+      this.toastr.error("Some error occured", '', { timeOut: 1250 })
+    })
+  }// end of getAllNotifications
+
+  // function to add friend and send the notification to the added friend
+  addFriend(toId) {
+    console.log(toId)
+    this.destroysNotifModal();
+    //constructing the notification object
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: toId,
+      type: 'Friend Request Acceptance',
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
+      authToken: this.authToken
+    }
+
+    this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.toastr.success(apiResult.message, '', { timeOut: 2250 })
+            this.socketService.sendFriendAcceptNotification(notificationObject);
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+          }
+        })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+      }
+    })
+  }// end of addFriend
 
   public goToMainHome() {
     this.location.back();
@@ -340,7 +418,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                   console.log(this.itemName)
                   console.log(this.itemNamesList)
                   if (this.itemNamesList[i] === this.itemName) {
-                    console.log(1)
                     this.itemNamesList[i] = newItemName;
                   }
                 }
@@ -375,6 +452,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
 
         delete this.statusMapping[this.itemName];
+        this.subItemsList.splice(0, this.subItemsList.length)
         delete this.subTaskMapping[this.itemName];
         for (let i in this.itemNamesList) {
           if (this.itemNamesList[i] === this.itemName) {
@@ -416,9 +494,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     })
   }
 
-
-
-
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();
@@ -449,9 +524,10 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   closeNav_2() {
     closeNavigationBarv2();
   }
-
   destroysItemModal() {
     destroyModal();
   }
-
+  destroysNotifModal() {
+    destroyModal();
+  }
 }

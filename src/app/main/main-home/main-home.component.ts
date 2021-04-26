@@ -1,11 +1,12 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
-import { AppService } from './../../app.service';
-import { MainService } from './../../main.service';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CheckUser } from './../../CheckUser';
+import { AppService } from './../../app.service';
+import { MainService } from './../../main.service';
+import { SocketService } from './../../socket.service'
 import * as $ from 'jquery';
 
 declare const openNavgationBarv1: any;
@@ -19,6 +20,7 @@ declare const destroyModal: any;
   templateUrl: './main-home.component.html',
   styleUrls: ['./main-home.component.css']
 })
+
 export class MainHomeComponent implements OnInit, CheckUser {
 
   scrHeight = window.innerHeight;
@@ -36,12 +38,23 @@ export class MainHomeComponent implements OnInit, CheckUser {
   public toggleMainMessage = 0;
   public allUserList: any = [];
   public searchClick = false;
+  public disconnectedSocket: Boolean;
+  public userMapping: any = {};
+  public notificationsList: any = [];
+  public notificationsMapping: any = {};
+  public notifTrackerList: any = [];
+  public notificationModalFlag: Boolean = false;
+  public friendsModalFlag: Boolean = false;
+  public friendsIdList: any = [];
+  public friendsNameList: any = [];
+
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
     this.scrHeight = window.innerHeight;
     this.scrWidth = window.innerWidth;
   }
+
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     this.key = event.keyCode;
@@ -59,6 +72,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     public router: Router,
     public appService: AppService,
     public mainService: MainService,
+    public socketService: SocketService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -78,6 +92,15 @@ export class MainHomeComponent implements OnInit, CheckUser {
     // checking the user
     this.checkStatus();
 
+    //testing socket connection
+    this.verifyUserConfirmation();
+
+    //dummy test function
+    this.connected();
+
+    // receiving real time notifications to subscribed socket events
+    this.receiveRealTimeNotifications();
+
     // getting all the project lists
     this.getProjectLists()
   }
@@ -90,7 +113,170 @@ export class MainHomeComponent implements OnInit, CheckUser {
     } else {
       return true;
     }
-  } //end of check status
+  } //end of checkStatus
+
+  //function to verify user (socket connection testing)
+  public verifyUserConfirmation: any = () => {
+    console.log("verify")
+    this.socketService.verifyUser()
+      .subscribe((data) => {
+        this.disconnectedSocket = false;
+        this.socketService.setUser(this.authToken);
+      });
+  }// end of verifyUserConfirmation
+
+  //dummy test function
+  public connected: any = () => {
+    this.socketService.connected().subscribe((data) => {
+      console.log(data)
+    })
+  }// end of getProjectLists
+
+  //fucntion to send friend request notification to the recipient
+  sendFriendRequest(toId) {
+    this.destroysSearchModal();
+    //constructing the notification object
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: toId,
+      type: 'Friend Request',
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} is requesting to add you as their friend`,
+      authToken: this.authToken
+    }
+    this.mainService.checkFriend(notificationObject).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.socketService.sendRequestNotification(notificationObject);
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+          }
+        })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+      }
+    })
+
+  }// end of sendFriendRequest
+
+  // function to receive real time notifications
+  receiveRealTimeNotifications() {
+    this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
+    })
+  }// end of receiveRealTimeNotifications
+
+  //function to get all  the notifications from the db
+  getAllNotifications() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.mainService.getAllUserNotifications(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.notificationModalFlag = true;
+        this.notificationsList.splice(0, this.notificationsList.length)
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        for (let notifs of apiResult.data) {
+          if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
+            this.notificationsList.push(notifs)
+            this.notifTrackerList.push(notifs.createdOn)
+            this.notificationsMapping[notifs.notificationMessage] = true
+          }
+          else if (!this.notifTrackerList.includes(notifs.createdOn)) {
+            this.notifTrackerList.push(notifs.createdOn)
+            this.notificationsList.push(notifs)
+            this.notificationsMapping[notifs.notificationMessage] = false
+          }
+        }
+        console.log(this.notificationModalFlag)
+        console.log(this.notificationsList)
+        console.log(this.notificationsMapping)
+      }
+      else {
+        this.notificationModalFlag = false;
+        console.log(this.notificationModalFlag)
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    }, (err) => {
+      this.toastr.error("Some error occured", '', { timeOut: 1250 })
+    })
+  }// end of getAllNotifications
+
+  // function to add friend and send the notification to the added friend
+  addFriend(toId) {
+    console.log(toId)
+    this.destroysNotifModal();
+    //constructing the notification object
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: toId,
+      type: 'Friend Request Acceptance',
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
+      authToken: this.authToken
+    }
+
+    this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.toastr.success(apiResult.message, '', { timeOut: 2250 })
+            this.socketService.sendFriendAcceptNotification(notificationObject);
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+          }
+        })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+      }
+    })
+  }// end of addFriend
+
+  // function to get friend names to display on friends modal
+  getAllFriendsOfUser() {
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.mainService.getUserFriendList(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        console.log(apiResult.data['friendsList'])
+        for (let i of apiResult.data['friendsList']) {
+          console.log(i)
+          if (!this.friendsIdList.includes(i['userId'])) {
+            console.log(1)
+            this.friendsIdList.push(i['userId'])
+          }
+        }
+        for (let j of this.friendsIdList) {
+          console.log(j)
+          let data = {
+            userId: j,
+            authToken: this.authToken
+          }
+          this.appService.getUserName(data).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let fullName = apiResult.data[0]['firstName'] + " " + (apiResult.data[0]['lastName']).trim()
+              if (!this.friendsNameList.includes(fullName)) {
+                this.friendsNameList.push(fullName)
+              }
+            }
+          })
+        }
+        console.log(this.friendsNameList)
+        this.friendsModalFlag = true;
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.friendsModalFlag = false;
+        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+      }
+    })
+  }// end of getAllFriendsOfUser
 
   // function to execute when create project is selected and submitted.
   getProjectLists() {
@@ -118,7 +304,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }, (err) => {
       this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
     })
-  }// end of getProjectLists function
+  }// end of getProjectLists
 
   // receiving project name in modal.
   mainModalFormSubmit() {
@@ -141,20 +327,23 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  }// end of mainModalFormSubmit
 
   // navigate to view task component
   goToViewTask(projectNameSelected) {
     this.router.navigate(['/view-task', projectNameSelected])
-  }
+  }// end of goToViewTask
 
+  //function to get all the users
   getAllUsers() {
     this.appService.getSpecificUsersDetails().subscribe((apiResult) => {
       if (apiResult.status === 200) {
         var tempList = []
         for (let i of apiResult.data) {
-          tempList.push(i)
-          this.allUserList = [...new Set(tempList)]
+          if (i.userId !== this.userInfo.userId) {
+            tempList.push(i)
+            this.allUserList = [...new Set(tempList)]
+          }
         }
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
@@ -164,7 +353,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }, (err) => {
       this.toastr.error('Some error occured', '', { timeOut: 1250 })
     })
-  }
+  }// end of getAllUsers
 
   // user will be logged out
   logoutUser() {
@@ -182,7 +371,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     })
-  }
+  }// end of logoutUser
 
   // logic to change sidebar position based on screen width
   // requires screen refresh after changing to screen size < 750px width.
@@ -203,7 +392,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
       this.closeNav_2();
       this.toggle_2 = 1;
     }
-  }
+  }// end of toggleNav
   openNav_1() {
     openNavgationBarv1();
   }
@@ -217,6 +406,12 @@ export class MainHomeComponent implements OnInit, CheckUser {
     closeNavigationBarv2();
   }
   destroysProfileModal() {
+    destroyModal();
+  }
+  destroysSearchModal() {
+    destroyModal();
+  }
+  destroysNotifModal() {
     destroyModal();
   }
 }

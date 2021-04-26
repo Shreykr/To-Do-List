@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
 
   sendRecoveryMail() {
     let data = {
-      email: this.profileLoginForm.controls.userLoginMail.value
+      email: this.profileLoginForm.controls.userLoginMail.value.toLowerCase()
     }
     this.appService.sendMail(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
@@ -53,7 +53,7 @@ export class LoginComponent implements OnInit {
   signUpFunction(f) {
     // TODO: Use EventEmitter with form value
     let data = {
-      email: f.controls.userLoginMail.value,
+      email: f.controls.userLoginMail.value.toLowerCase(),
       password: f.controls.userLoginPassword.value
     }
 

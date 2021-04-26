@@ -40,7 +40,6 @@ export class AppService {
       .set('email', data.email)
       .set('password', data.password)
 
-
     return this.http.post(`${this.url}/api/v1/users/signup`, params);
   } // end of signup function.
 
@@ -50,7 +49,6 @@ export class AppService {
       .set('password', data.password);
 
     return this.http.post(`${this.url}/api/v1/users/login`, params);
-
   } //end of login function
 
   public editUserPassword(data): Observable<any> {
@@ -60,18 +58,26 @@ export class AppService {
       .set('newPassword', data.newPassword)
 
     return this.http.post(`${this.url}/api/v1/users/editUserPassword`, params);
-  }
+  } // end of editUserPassword
 
   public sendMail(data): Observable<any> {
     const params = new HttpParams()
       .set('email', data.email);
 
     return this.http.post(`${this.url}/api/v1/users/send-mail`, params);
-  } //end of login function
+  } // end of sendMail
 
   public getSpecificUsersDetails(): Observable<any> {
     return this.http.get(`${this.url}/api/v1/users/view/all-users`);
-  }
+  } // end of sendMail
+
+  public getUserName(data): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', data.userId)
+      .set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/users/view/single-user`, params)
+  }// end of getUserName
 
   public logoutFunction(data): Observable<any> {
     const params = new HttpParams()

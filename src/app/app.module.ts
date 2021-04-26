@@ -18,6 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppService } from './app.service';
 import { MainService } from './main.service';
+import { SocketService } from './socket.service';
 @NgModule({
   declarations: [
     AppComponent,
@@ -46,7 +47,7 @@ import { MainService } from './main.service';
       { path: '**', component: HomeComponent }
     ])
   ],
-  providers: [AppService, MainService],
+  providers: [AppService, MainService, SocketService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

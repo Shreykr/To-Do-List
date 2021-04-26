@@ -148,9 +148,11 @@ export class SignupComponent implements OnInit {
       lastName: f.controls.userLastName.value,
       mobileNumber: f.controls.userMobileNumber.value,
       country: f.controls.userCountry.value,
-      email: f.controls.userMail.value,
+      email: f.controls.userMail.value.toLowerCase(),
       password: f.controls.userPassword.value
-
+    }
+    if (data.lastName === null || data.lastName === undefined) {
+      data.lastName = '';
     }
 
     this.appService.signupFunction(data).subscribe((apiResult) => {
