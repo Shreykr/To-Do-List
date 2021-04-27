@@ -68,22 +68,26 @@ export class SocketService {
     this.socket.emit('friend-accept-notification', notificationObject)
   }
 
+  public sendConnectionStatusNotification = (notificationObject) => {
+    this.socket.emit('friend-connect-notification', notificationObject)
+  }
 
+  public receiveGroupConnectionsNotifications = () => {
+    return Observable.create((observer) => {
+      this.socket.on('friend-group-notification', (data) => {
+        observer.next(data)
+      })
+    })
+  }
 
   // public disconnectedSocket = () => {
-
   //   return Observable.create((observer) => {
-
   //     this
   //       .socket
   //       .on("disconnect", () => {
-
   //         observer.next();
-
   //       });
-
   //   });
-
   // }     
 
   private handleError(err: HttpErrorResponse) {

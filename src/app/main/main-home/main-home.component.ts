@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { CheckUser } from './../../CheckUser';
 import { AppService } from './../../app.service';
 import { MainService } from './../../main.service';
-import { SocketService } from './../../socket.service'
+import { SocketService } from './../../socket.service';
 import * as $ from 'jquery';
 
 declare const openNavgationBarv1: any;
@@ -46,8 +46,8 @@ export class MainHomeComponent implements OnInit, CheckUser {
   public notificationModalFlag: Boolean = false;
   public friendsModalFlag: Boolean = false;
   public friendsIdList: any = [];
-  public friendsNameList: any = [];
-
+  //public friendsNameList: any = [];
+  public friendsIdMapping: any = [];
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -100,6 +100,9 @@ export class MainHomeComponent implements OnInit, CheckUser {
 
     // receiving real time notifications to subscribed socket events
     this.receiveRealTimeNotifications();
+
+    // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
+    this.receiveGroupConnectionsNotifications();
 
     // getting all the project lists
     this.getProjectLists()
@@ -158,15 +161,21 @@ export class MainHomeComponent implements OnInit, CheckUser {
         this.toastr.error(apiResult.message, '', { timeOut: 2250 })
       }
     })
-
-  }// end of sendFriendRequest
+  } // end of sendFriendRequest
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
     })
-  }// end of receiveRealTimeNotifications
+  } // end of receiveRealTimeNotifications
+
+  // function to receive real time friend group related notifications
+  receiveGroupConnectionsNotifications() {
+    this.socketService.receiveGroupConnectionsNotifications().subscribe((data) => {
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 6000 })
+    })
+  } // end of receiveGroupConnectionsNotifications
 
   //function to get all  the notifications from the db
   getAllNotifications() {
@@ -178,6 +187,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.notificationModalFlag = true;
         this.notificationsList.splice(0, this.notificationsList.length)
+        this.notifTrackerList.splice(0, this.notifTrackerList.length)
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         for (let notifs of apiResult.data) {
           if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
@@ -203,7 +213,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }, (err) => {
       this.toastr.error("Some error occured", '', { timeOut: 1250 })
     })
-  }// end of getAllNotifications
+  } // end of getAllNotifications
 
   // function to add friend and send the notification to the added friend
   addFriend(toId) {
@@ -246,9 +256,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         console.log(apiResult.data['friendsList'])
         for (let i of apiResult.data['friendsList']) {
-          console.log(i)
           if (!this.friendsIdList.includes(i['userId'])) {
-            console.log(1)
             this.friendsIdList.push(i['userId'])
           }
         }
@@ -258,16 +266,24 @@ export class MainHomeComponent implements OnInit, CheckUser {
             userId: j,
             authToken: this.authToken
           }
+          this.friendsIdMapping.splice(0, this.friendsIdMapping.length)
           this.appService.getUserName(data).subscribe((apiResult) => {
             if (apiResult.status === 200) {
               let fullName = apiResult.data[0]['firstName'] + " " + (apiResult.data[0]['lastName']).trim()
-              if (!this.friendsNameList.includes(fullName)) {
-                this.friendsNameList.push(fullName)
+              if (this.friendsIdMapping.length === 0) {
+                this.friendsIdMapping.push({ userId: j, fullName: fullName })
+              }
+              else {
+                for (let k in this.friendsIdMapping) {
+                  if (this.friendsIdMapping[k].userId != j) {
+                    this.friendsIdMapping.push({ userId: j, fullName: fullName })
+                  }
+                }
               }
             }
           })
         }
-        console.log(this.friendsNameList)
+        console.log(this.friendsIdMapping)
         this.friendsModalFlag = true;
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
@@ -277,6 +293,32 @@ export class MainHomeComponent implements OnInit, CheckUser {
       }
     })
   }// end of getAllFriendsOfUser
+
+  //function to send a notification and navigate to friend's projects
+  connectWithFriend(toId, fullName) {
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: toId,
+      type: 'Task Edit',
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has connected to ${fullName}'s toDo`,
+      fullName: fullName
+    }
+    let data = {
+      userId: this.userInfo.userId,
+      mainUserId: toId,
+      authToken: this.authToken
+    }
+    this.mainService.checkForFriendship(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.socketService.sendConnectionStatusNotification(notificationObject)
+        console.log("Successfully travel to next component")
+        Cookie.set('collabLeaderId', toId)
+        this.router.navigate(['/collab-home'])
+      }
+    })
+
+  } // end of connectWithFriend
 
   // function to execute when create project is selected and submitted.
   getProjectLists() {
@@ -299,12 +341,12 @@ export class MainHomeComponent implements OnInit, CheckUser {
           this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         }
       } else {
-        //this.toastr.error(apiResult.message)
+        // this.toastr.error(apiResult.message)
       }
     }, (err) => {
       this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
     })
-  }// end of getProjectLists
+  } // end of getProjectLists
 
   // receiving project name in modal.
   mainModalFormSubmit() {
@@ -327,7 +369,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }// end of mainModalFormSubmit
+  } // end of mainModalFormSubmit
 
   // navigate to view task component
   goToViewTask(projectNameSelected) {
@@ -371,7 +413,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     })
-  }// end of logoutUser
+  }  // end of logoutUser
 
   // logic to change sidebar position based on screen width
   // requires screen refresh after changing to screen size < 750px width.
@@ -392,7 +434,8 @@ export class MainHomeComponent implements OnInit, CheckUser {
       this.closeNav_2();
       this.toggle_2 = 1;
     }
-  }// end of toggleNav
+  } // end of toggleNav
+
   openNav_1() {
     openNavgationBarv1();
   }

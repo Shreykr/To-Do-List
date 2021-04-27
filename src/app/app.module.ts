@@ -3,9 +3,10 @@ import { SignupComponent } from './user/signup/signup.component';
 import { HomeComponent } from './general/home/home.component';
 import { LoginComponent } from './user/login/login.component';
 import { AppComponent } from './app.component';
-import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component'
+import { PasswordRecoveryComponent } from './user/password-recovery/password-recovery.component';
 import { MainHomeComponent } from './main/main-home/main-home.component';
-import { ViewTaskComponent } from './main/view-task/view-task.component'
+import { ViewTaskComponent } from './main/view-task/view-task.component';
+import { CollabHomeComponent } from './main/collab-home/collab-home.component';
 
 //Modules
 import { NgModule } from '@angular/core';
@@ -27,7 +28,8 @@ import { SocketService } from './socket.service';
     LoginComponent,
     PasswordRecoveryComponent,
     MainHomeComponent,
-    ViewTaskComponent
+    ViewTaskComponent,
+    CollabHomeComponent
   ],
   imports: [
     BrowserModule,
@@ -41,6 +43,7 @@ import { SocketService } from './socket.service';
       { path: 'login', component: LoginComponent },
       { path: 'main-home', component: MainHomeComponent },
       { path: 'view-task/:projectName', component: ViewTaskComponent },
+      { path: 'collab-home', component: CollabHomeComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },

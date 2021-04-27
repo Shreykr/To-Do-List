@@ -147,4 +147,13 @@ export class MainService {
     return this.http.post(`${this.url}/api/v1/main/user-friends`, params)
   }
 
+  public checkForFriendship(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('mainUserId', data.mainUserId)
+    params = params.set('userId', data.userId)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/check-friendship`, params)
+  }
+
 }

@@ -1,0 +1,85 @@
+<div class="topnav">
+    <span class="navbar-icon ml-3" (click)="toggleNav()" data-toggle="tooltip-topNav"
+        title="Press Esc Key to toggle">&#9776;
+    </span>
+</div>
+<div id="sidenav" class="sidenav-collapse">
+    <div class="container-fluid sidenav-buttons" id="sidenav-buttons">
+        <div class="create mt-5 mb-3">
+            <button type="button" class="btn create-button" data-toggle="modal" data-target="#projectModal">
+                Create Project +
+            </button>
+        </div>
+        <div class="search mt-5" data-toggle="modal" data-target="">
+            <button type="button" class="btn search-button">
+                Disconnect
+            </button>
+        </div>
+        <div class="logout mt-5 mb-3">
+            <button type="button" class="btn btn-danger logout-button" (click)="logoutUser()">
+                Logout
+            </button>
+        </div>
+    </div>
+</div>
+<div id="main-content" class="main-content">
+    <div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" class="form-control" [ngClass]="{
+                                'has-danger': ((projectModalForm.get('projectName').invalid && projectModalForm.get('projectName').dirty)||(projectModalForm.get('projectName').touched && projectModalForm.get('projectName').pristine)), 
+                                'has-success': projectModalForm.get('projectName').valid && projectModalForm.get('projectName').dirty
+                              }" formControlName="projectName" data-toggle="tooltip"
+                                title="Maximum 15 alphanumeric characters">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
+                            class="btn btn-primary">Apply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="sub-content" *ngIf="!toggleMainMessage">
+        <div class="row ">
+            <div class="container project-heading text-center">
+                <h4>You have not created any projects :-(</h4>
+            </div>
+        </div>
+    </div>
+    <div class="sub-content" *ngIf="toggleMainMessage">
+        <div class="row ">
+            <div class="container project-heading text-center">
+                <h3>All projects</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div *ngFor="let project of projectNamesList" class="col-sm-4 col-md-6 col-lg-4 col-xl-3">
+                <div class="card text-center text-white bg-dark mb-3"
+                    style="max-width: 30rem;height:11rem;border-radius:10px;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{project}}</h5>
+                    </div>
+                    <div class="card-footer text-muted footer">
+                        <button class="btn btn-danger btn-md btn-block" (click)="goToViewTask(project)">View
+                            Tasks
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+</div>

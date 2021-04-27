@@ -170,15 +170,16 @@
                                     </div>
                                 </div>
                             </li>
-                            <div *ngFor="let friend of friendsNameList; let i=index">
+                            <div *ngFor="let friend of friendsIdMapping; let i=index">
                                 <li class="list-group-item">
                                     <div class="container-fluid">
                                         <div class="row" *ngIf="friendsModalFlag">
                                             <div class="col-7 col-sm-8">
-                                                {{friend}}
+                                                {{friend.fullName}}
                                             </div>
                                             <div class="col-5 col-sm-4 text-right">
-                                                <button class="btn btn-dark">Connect</button>
+                                                <button class="btn btn-dark"
+                                                    (click)="connectWithFriend(friend.userId,friend.fullName)">Connect</button>
                                             </div>
                                         </div>
                                     </div>
@@ -207,7 +208,7 @@
             </div>
         </div>
         <div class="row">
-            <div *ngFor="let project of projectNamesList" class="col-sm-4">
+            <div *ngFor="let project of projectNamesList" class="col-sm-4 col-md-6 col-lg-4 col-xl-3">
                 <div class="card text-center text-white bg-dark mb-3"
                     style="max-width: 30rem;height:11rem;border-radius:10px;">
                     <div class="card-body">

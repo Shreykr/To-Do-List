@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
       if (apiResult.status === 200) {
         this.toastr.success(apiResult.message);
         Cookie.set('authtoken', apiResult.data.authToken);
-        Cookie.set('mainUserId', apiResult.data.userDetails.userId);
+        Cookie.set('userId', apiResult.data.userDetails.userId);
         this.appService.setUserInfoInLocalStorage(apiResult.data.userDetails)
 
         this.router.navigate(['/main-home']);

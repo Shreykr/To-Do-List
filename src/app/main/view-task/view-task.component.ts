@@ -41,6 +41,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   public userInfo: any;
   public statusMapping: any = {};
   public subTaskMapping: any = {};
+  public disconnectedSocket: Boolean;
   public notificationsList: any = [];
   public notificationsMapping: any = {};
   public notifTrackerList: any = [];
@@ -100,7 +101,16 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     // checking the user
     this.checkStatus();
 
-    // getting all the project lists
+    //testing socket connection
+    this.verifyUserConfirmation();
+
+    //dummy test function
+    this.connected();
+
+    // receiving real time notifications to subscribed socket events
+    this.receiveRealTimeNotifications();
+
+    // getting all the task lists
     this.getItemList()
   }
 
@@ -112,6 +122,23 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       return true;
     }
   } //end of check status
+
+  //function to verify user (socket connection testing)
+  public verifyUserConfirmation: any = () => {
+    console.log("verify")
+    this.socketService.verifyUser()
+      .subscribe((data) => {
+        this.disconnectedSocket = false;
+        this.socketService.setUser(this.authToken);
+      });
+  }// end of verifyUserConfirmation
+
+  //dummy test function
+  public connected: any = () => {
+    this.socketService.connected().subscribe((data) => {
+      console.log(data)
+    })
+  }// end of connected
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
@@ -129,6 +156,8 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     this.mainService.getAllUserNotifications(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.notificationModalFlag = true;
+        this.notificationsList.splice(0, this.notificationsList.length)
+        this.notifTrackerList.splice(0, this.notifTrackerList.length)
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         for (let notifs of apiResult.data) {
           if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
@@ -199,6 +228,8 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     }
     this.mainService.getItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
+        this.itemNamesList.splice(0, this.itemNamesList.length)
+        this.subItemsList.splice(0, this.subItemsList.length)
         console.log(apiResult)
         for (let i in apiResult.data.projects) {
           for (let j in apiResult.data.projects[i].items) {
@@ -224,7 +255,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             if (this.subItemsList.length !== 0) {
               this.subTaskMapping[apiResult.data.projects[i].items[j].itemName] = apiResult.data.projects[i].items[j].sub_items
             }
-            console.log(this.subTaskMapping)
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
