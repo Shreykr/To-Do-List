@@ -40,7 +40,7 @@
                                 'has-danger': ((projectModalForm.get('projectName').invalid && projectModalForm.get('projectName').dirty)||(projectModalForm.get('projectName').touched && projectModalForm.get('projectName').pristine)), 
                                 'has-success': projectModalForm.get('projectName').valid && projectModalForm.get('projectName').dirty
                               }" formControlName="projectName" data-toggle="tooltip"
-                                title="Maximum 15 alphanumeric characters">
+                                title="Maximum 25 alphanumeric characters">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    <!-- <div class="sub-content" *ngIf="!toggleMainMessage">
+    <div class="sub-content" *ngIf="!toggleMainMessage">
         <div class="row ">
             <div class="container project-heading text-center">
                 <h4>You have not created any projects :-(</h4>
@@ -74,12 +74,12 @@
                         <h5 class="card-title">{{project}}</h5>
                     </div>
                     <div class="card-footer text-muted footer">
-                        <button class="btn btn-danger btn-md btn-block" (click)="goToViewTask(project)">View
+                        <button class="btn btn-danger btn-md btn-block" (click)="goToViewTaskCollab(project)">View
                             Tasks
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
 </div>

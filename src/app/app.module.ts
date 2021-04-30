@@ -20,6 +20,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppService } from './app.service';
 import { MainService } from './main.service';
 import { SocketService } from './socket.service';
+import { ActionService } from './action.service';
 @NgModule({
   declarations: [
     AppComponent,
@@ -43,14 +44,14 @@ import { SocketService } from './socket.service';
       { path: 'login', component: LoginComponent },
       { path: 'main-home', component: MainHomeComponent },
       { path: 'view-task/:projectName', component: ViewTaskComponent },
-      { path: 'collab-home', component: CollabHomeComponent },
+      { path: 'collab-home/:toId', component: CollabHomeComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },
       { path: '**', component: HomeComponent }
     ])
   ],
-  providers: [AppService, MainService, SocketService],
+  providers: [AppService, MainService, SocketService, ActionService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

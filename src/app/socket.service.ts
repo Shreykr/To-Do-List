@@ -80,6 +80,10 @@ export class SocketService {
     })
   }
 
+  public sendGroupEditsNotification = (notificationObject) => {
+    this.socket.emit('friend-edits-notification', notificationObject)
+  }
+
   // public disconnectedSocket = () => {
   //   return Observable.create((observer) => {
   //     this

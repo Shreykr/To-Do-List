@@ -515,6 +515,8 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         Cookie.delete('authtoken');
+        Cookie.delete('userId');
+        Cookie.delete('collabLeaderId');
         this.router.navigate(['/']);
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }

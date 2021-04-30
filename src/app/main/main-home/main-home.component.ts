@@ -312,12 +312,11 @@ export class MainHomeComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.socketService.sendConnectionStatusNotification(notificationObject)
-        console.log("Successfully travel to next component")
         Cookie.set('collabLeaderId', toId)
-        this.router.navigate(['/collab-home'])
+        Cookie.set('collabLeaderName', fullName)
+        this.router.navigate(['/collab-home', toId])
       }
     })
-
   } // end of connectWithFriend
 
   // function to execute when create project is selected and submitted.
@@ -406,6 +405,8 @@ export class MainHomeComponent implements OnInit, CheckUser {
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         Cookie.delete('authtoken');
+        Cookie.delete('userId');
+        Cookie.delete('collabLeaderId');
         this.router.navigate(['/']);
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
@@ -455,6 +456,9 @@ export class MainHomeComponent implements OnInit, CheckUser {
     destroyModal();
   }
   destroysNotifModal() {
+    destroyModal();
+  }
+  destroyFriendModal() {
     destroyModal();
   }
 }

@@ -1,13 +1,15 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CheckUser } from './../../CheckUser';
 import { AppService } from './../../app.service';
 import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
+import { ActionService } from 'src/app/action.service';
 import * as $ from 'jquery';
+
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -20,7 +22,7 @@ declare const destroyModal: any;
   templateUrl: './collab-home.component.html',
   styleUrls: ['./collab-home.component.css']
 })
-export class CollabHomeComponent implements OnInit {
+export class CollabHomeComponent implements OnInit, CheckUser {
 
   scrHeight = window.innerHeight;
   scrWidth = window.innerWidth;
@@ -28,6 +30,8 @@ export class CollabHomeComponent implements OnInit {
   //main values
   public projectNamesList: any = [];
   public key: any;
+  public collabLeaderId;
+  public collabLeaderName
   public toggle_1: any = 0;
   public toggle_2: any = 0;
   public flag = 0;
@@ -39,14 +43,6 @@ export class CollabHomeComponent implements OnInit {
   public searchClick = false;
   public disconnectedSocket: Boolean;
   public userMapping: any = {};
-  public notificationsList: any = [];
-  public notificationsMapping: any = {};
-  public notifTrackerList: any = [];
-  public notificationModalFlag: Boolean = false;
-  public friendsModalFlag: Boolean = false;
-  public friendsIdList: any = [];
-  //public friendsNameList: any = [];
-  public friendsIdMapping: any = [];
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -68,10 +64,12 @@ export class CollabHomeComponent implements OnInit {
   }
 
   constructor(
+    public _route: ActivatedRoute,
     public router: Router,
     public appService: AppService,
     public mainService: MainService,
     public socketService: SocketService,
+    public actionService: ActionService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -86,7 +84,11 @@ export class CollabHomeComponent implements OnInit {
       this.toggle_1 = 1;
     }
     this.authToken = Cookie.get('authtoken');
+    this.collabLeaderName = Cookie.get('collabLeaderName')
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
+    this.collabLeaderId = this._route.snapshot.paramMap.get('toId')
+
+    this.destroyAllModal();
 
     // checking the user
     this.checkStatus();
@@ -104,13 +106,14 @@ export class CollabHomeComponent implements OnInit {
     this.receiveGroupConnectionsNotifications();
 
     // getting all the project lists
-    this.getProjectLists()
+    this.getMainProjectLists()
   }
 
   // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
-      this.router.navigate(['/']);
+      if (Cookie.get('collabLeaderId') === this.collabLeaderId)
+        this.router.navigate(['/']);
       return false;
     } else {
       return true;
@@ -143,15 +146,16 @@ export class CollabHomeComponent implements OnInit {
 
   // function to receive real time friend group related notifications
   receiveGroupConnectionsNotifications() {
+    console.log("NOTIFICATION RECEIVED")
     this.socketService.receiveGroupConnectionsNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 6000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 2000 })
     })
   } // end of receiveGroupConnectionsNotifications
 
-  // function to execute when create project is selected and submitted.
-  getProjectLists() {
+  // function to execute when the friend connects with a user
+  getMainProjectLists() {
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken
     }
     this.mainService.getProjectList(data).subscribe((apiResult) => {
@@ -161,36 +165,69 @@ export class CollabHomeComponent implements OnInit {
         }
         else {
           this.toggleMainMessage = 1;
+          this.projectNamesList.splice(0, this.projectNamesList.length)
           for (let projectNames of apiResult.data.projects) {
             this.projectNamesList.push(projectNames.name)
           }
         }
         if (apiResult.data.projects.length !== 0) {
-          this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          this.toastr.success(apiResult.message, '', { timeOut: 1550 })
         }
       } else {
         //this.toastr.error(apiResult.message)
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
+      this.toastr.error("Some Error Occured", '', { timeOut: 1550 });
     })
-  }// end of getProjectLists
+  }// end of getProjectLists  
 
-  // receiving project name in modal.
+  // receiving project name in modal
   mainModalFormSubmit() {
     this.projectValue = this.projectModalForm.controls.projectName.value;
     this.destroysProfileModal();
 
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectValue
     }
+
     this.mainService.addNewProjectList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.toggleMainMessage = 1;
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-        this.projectNamesList.push(this.projectValue)
+        this.toastr.success(apiResult.message, '', { timeOut: 1550 })
+        this.getMainProjectLists();
+        console.log(this.collabLeaderName)
+
+        let notificationObject = {
+          fromId: this.userInfo.userId,
+          toId: this.collabLeaderId,
+          type: "Friend collab",
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new project with name ${this.projectValue}`,
+          fullName: this.collabLeaderName
+        };
+
+        this.socketService.sendGroupEditsNotification(notificationObject);
+
+        let action = {
+          type: "Project Addition",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousValueOfTarget: "",
+          newValueOfTarget: this.projectModalForm.controls.projectName.value,
+          authToken: this.authToken
+        }
+
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
       } else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
@@ -200,8 +237,8 @@ export class CollabHomeComponent implements OnInit {
   }// end of mainModalFormSubmit
 
   // navigate to view task component
-  goToViewTask(projectNameSelected) {
-    this.router.navigate(['/view-task', projectNameSelected])
+  goToViewTaskCollab(projectNameSelected) {
+    //this.router.navigate(['/collab-view-task', projectNameSelected])
   }// end of goToViewTask  
 
   // user will be logged out
@@ -213,6 +250,8 @@ export class CollabHomeComponent implements OnInit {
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         Cookie.delete('authtoken');
+        Cookie.delete('userId');
+        Cookie.delete('collabLeaderId');
         this.router.navigate(['/']);
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
@@ -223,7 +262,7 @@ export class CollabHomeComponent implements OnInit {
   }// end of logoutUser
 
   // logic to change sidebar position based on screen width
-  // requires screen refresh after changing to screen size < 750px width.
+  // requires screen refresh after changing to screen size < 750px width
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();
@@ -258,10 +297,7 @@ export class CollabHomeComponent implements OnInit {
   destroysProfileModal() {
     destroyModal();
   }
-  destroysSearchModal() {
-    destroyModal();
-  }
-  destroysNotifModal() {
+  destroyAllModal() {
     destroyModal();
   }
 

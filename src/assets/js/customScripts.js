@@ -31,4 +31,6 @@ function destroyModal(){
   $('#searchModal').modal('hide')
 
   $('#notificationModal').modal('hide')
+
+  $('#friendsModal').modal('hide')
 }
