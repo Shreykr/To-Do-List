@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MainHomeComponent } from './main-home/main-home.component';
 import { ViewTaskComponent } from './view-task/view-task.component';
 import { CollabHomeComponent } from './collab-home/collab-home.component';
+import { CollabViewTaskComponent } from './collab-view-task/collab-view-task.component';
 
 
 
@@ -10,7 +11,8 @@ import { CollabHomeComponent } from './collab-home/collab-home.component';
   declarations: [
     MainHomeComponent,
     ViewTaskComponent,
-    CollabHomeComponent
+    CollabHomeComponent,
+    CollabViewTaskComponent
   ],
   imports: [
     CommonModule

@@ -9,6 +9,7 @@ import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
 import { ActionService } from 'src/app/action.service';
 import * as $ from 'jquery';
+import { Subscription } from 'rxjs';
 
 
 declare const openNavgationBarv1: any;
@@ -24,6 +25,9 @@ declare const destroyModal: any;
 })
 export class CollabHomeComponent implements OnInit, CheckUser {
 
+  public subscription_1: Subscription;
+  public subscription_2: Subscription;
+
   scrHeight = window.innerHeight;
   scrWidth = window.innerWidth;
 
@@ -31,7 +35,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   public projectNamesList: any = [];
   public key: any;
   public collabLeaderId;
-  public collabLeaderName
+  public collabLeaderName;
   public toggle_1: any = 0;
   public toggle_2: any = 0;
   public flag = 0;
@@ -84,9 +88,9 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       this.toggle_1 = 1;
     }
     this.authToken = Cookie.get('authtoken');
-    this.collabLeaderName = Cookie.get('collabLeaderName')
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
-    this.collabLeaderId = this._route.snapshot.paramMap.get('toId')
+    this.collabLeaderName = Cookie.get('collabLeaderName');
+    this.collabLeaderId = this._route.snapshot.paramMap.get('toId');
 
     this.destroyAllModal();
 
@@ -103,10 +107,15 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     this.receiveRealTimeNotifications();
 
     // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
-    this.receiveGroupConnectionsNotifications();
+    this.receiveGroupNotifications();
 
     // getting all the project lists
     this.getMainProjectLists()
+  }
+
+  ngOnDestroy() {
+    this.subscription_1.unsubscribe();
+    this.subscription_2.unsubscribe();
   }
 
   // fucntion to check the authToken/session of the user
@@ -139,18 +148,21 @@ export class CollabHomeComponent implements OnInit, CheckUser {
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
-    this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
+    this.subscription_1 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
     })
   } // end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
-  receiveGroupConnectionsNotifications() {
-    console.log("NOTIFICATION RECEIVED")
-    this.socketService.receiveGroupConnectionsNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 2000 })
+  receiveGroupNotifications() {
+    this.subscription_2 = this.socketService.receiveGroupNotifications().subscribe((data) => {
+      console.log("Executed")
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
+      if (data.refreshProjectList === true) {
+        this.getMainProjectLists();
+      }
     })
-  } // end of receiveGroupConnectionsNotifications
+  } // end of receiveGroupNotifications
 
   // function to execute when the friend connects with a user
   getMainProjectLists() {
@@ -171,7 +183,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
           }
         }
         if (apiResult.data.projects.length !== 0) {
-          this.toastr.success(apiResult.message, '', { timeOut: 1550 })
+          //this.toastr.success(apiResult.message, '', { timeOut: 7550 })
         }
       } else {
         //this.toastr.error(apiResult.message)
@@ -197,14 +209,14 @@ export class CollabHomeComponent implements OnInit, CheckUser {
         this.toggleMainMessage = 1;
         this.toastr.success(apiResult.message, '', { timeOut: 1550 })
         this.getMainProjectLists();
-        console.log(this.collabLeaderName)
 
         let notificationObject = {
           fromId: this.userInfo.userId,
           toId: this.collabLeaderId,
           type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new project with name ${this.projectValue}`,
-          fullName: this.collabLeaderName
+          fullName: this.collabLeaderName,
+          refreshProjectList: true
         };
 
         this.socketService.sendGroupEditsNotification(notificationObject);
@@ -218,7 +230,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
           authToken: this.authToken
         }
 
-        this.actionService.addNewAction(action).subscribe((apiResult) => {
+        this.mainService.addNewAction(action).subscribe((apiResult) => {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
@@ -238,7 +250,24 @@ export class CollabHomeComponent implements OnInit, CheckUser {
 
   // navigate to view task component
   goToViewTaskCollab(projectNameSelected) {
-    //this.router.navigate(['/collab-view-task', projectNameSelected])
+
+    let data = {
+      userId: this.userInfo.userId,
+      mainUserId: this.collabLeaderId,
+      authToken: this.authToken
+    }
+    this.mainService.checkForFriendship(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        Cookie.set('projectName', projectNameSelected)
+        this.router.navigate(['/collab-view-task', this.collabLeaderId, projectNameSelected])
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1650 })
+      }
+    }, (err) => {
+      this.toastr.error("Some error occured", '', { timeOut: 3650 })
+    })
   }// end of goToViewTask  
 
   // user will be logged out

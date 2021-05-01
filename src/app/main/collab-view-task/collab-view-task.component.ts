@@ -9,6 +9,7 @@ import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
 import { ToastrService } from 'ngx-toastr';
 import * as $ from 'jquery';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Subscription } from 'rxjs';
 
 declare const openNavgationBarv1: any;
@@ -16,12 +17,13 @@ declare const closeNavigationBarv1: any;
 declare const openNavgationBarv2: any;
 declare const closeNavigationBarv2: any;
 declare const destroyModal: any;
+
 @Component({
-  selector: 'app-view-task',
-  templateUrl: './view-task.component.html',
-  styleUrls: ['./view-task.component.css']
+  selector: 'app-collab-view-task',
+  templateUrl: './collab-view-task.component.html',
+  styleUrls: ['./collab-view-task.component.css']
 })
-export class ViewTaskComponent implements OnInit, CheckUser {
+export class CollabViewTaskComponent implements OnInit {
 
   public subscription_1: Subscription;
   public subscription_2: Subscription;
@@ -32,6 +34,8 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   //main values
   public key: any;
   public projectName;
+  public collabLeaderId;
+  public collabLeaderName;
   public itemName: any;
   public subItemName: any;
   public itemNamesList: any = [];
@@ -70,7 +74,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   })
 
   subItemModalForm = new FormGroup({
-    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,15}$')])
+    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,20}$')])
   })
 
   editItemModalForm = new FormGroup({
@@ -100,7 +104,9 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     }
     this.authToken = Cookie.get('authtoken');
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
-    this.projectName = this._route.snapshot.paramMap.get('projectName')
+    this.projectName = this._route.snapshot.paramMap.get('projectName');
+    this.collabLeaderName = Cookie.get('collabLeaderName');
+    this.collabLeaderId = this._route.snapshot.paramMap.get('toId');
 
     // checking the user
     this.checkStatus();
@@ -114,11 +120,10 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     // receiving real time notifications to subscribed socket events
     this.receiveRealTimeNotifications();
 
-    // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
     this.receiveGroupNotifications();
 
     // getting all the task lists
-    this.getItemList()
+    this.getMainItemList();
   }
 
   ngOnDestroy() {
@@ -157,101 +162,32 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     this.subscription_1 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
     })
-  } // end of receiveRealTimeNotifications
+  }// end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
   receiveGroupNotifications() {
     this.subscription_2 = this.socketService.receiveGroupNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 3000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
       if (data.refreshItemList === true) {
-        this.getItemList();
+        this.getMainItemList()
       }
     })
-  } // end of receiveGroupConnectionsNotifications
-
-  //function to get all  the notifications from the db
-  getAllNotifications() {
-    let data = {
-      userId: this.userInfo.userId,
-      authToken: this.authToken
-    }
-    this.mainService.getAllUserNotifications(data).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        this.notificationModalFlag = true;
-        this.notificationsList.splice(0, this.notificationsList.length)
-        this.notifTrackerList.splice(0, this.notifTrackerList.length)
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-        for (let notifs of apiResult.data) {
-          if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
-            this.notificationsList.push(notifs)
-            this.notifTrackerList.push(notifs.createdOn)
-            this.notificationsMapping[notifs.notificationMessage] = true
-          }
-          else if (!this.notifTrackerList.includes(notifs.createdOn)) {
-            this.notifTrackerList.push(notifs.createdOn)
-            this.notificationsList.push(notifs)
-            this.notificationsMapping[notifs.notificationMessage] = false
-          }
-        }
-        console.log(this.notificationModalFlag)
-        console.log(this.notificationsList)
-        console.log(this.notificationsMapping)
-      }
-      else {
-        this.notificationModalFlag = false;
-        console.log(this.notificationModalFlag)
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
-      }
-    }, (err) => {
-      this.toastr.error("Some error occured", '', { timeOut: 1250 })
-    })
-  }// end of getAllNotifications
-
-  // function to add friend and send the notification to the added friend
-  addFriend(toId) {
-    console.log(toId)
-    this.destroysNotifModal();
-    //constructing the notification object
-    let notificationObject = {
-      fromId: this.userInfo.userId,
-      toId: toId,
-      type: 'Friend Request Acceptance',
-      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
-      authToken: this.authToken
-    }
-
-    this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
-          if (apiResult.status === 200) {
-            this.toastr.success(apiResult.message, '', { timeOut: 2250 })
-            this.socketService.sendFriendAcceptNotification(notificationObject);
-          }
-          else {
-            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
-          }
-        })
-      }
-      else {
-        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
-      }
-    })
-  }// end of addFriend
+  } // end of receiveGroupNotifications
 
   public goToMainHome() {
     this.location.back();
   }
 
   // function to execute when component first loads
-  getItemList() {
+  getMainItemList() {
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken
     }
     this.mainService.getItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.itemNamesList.splice(0, this.itemNamesList.length);
-        this.subItemsList.splice(0, this.subItemsList.length);
+        this.itemNamesList.splice(0, this.itemNamesList.length)
+        this.subItemsList.splice(0, this.subItemsList.length)
         for (let varKey in this.statusMapping) {
           if (this.statusMapping.hasOwnProperty(varKey)) {
             delete this.statusMapping[varKey];
@@ -290,7 +226,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
-        this.toastr.success("Tasks Updated", '', { timeOut: 1250 })
+        //this.toastr.success("Tasks Updated", '', { timeOut: 1250 })
       } else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
@@ -301,12 +237,13 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
   // receiving task name in modal.
   itemModalFormSubmit() {
+    console.log(this.itemModalForm)
     this.itemName = this.itemModalForm.controls.itemName.value;
 
     this.destroysItemModal();
 
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectName,
       itemName: this.itemName
@@ -326,17 +263,36 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
         let notificationObject = {
           fromId: this.userInfo.userId,
-          toId: this.userInfo.userId,
-          type: "toDo Owner action",
+          toId: this.collabLeaderId,
+          type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new task with name ${this.itemName}`,
-          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          fullName: this.collabLeaderName,
           refreshItemList: true
         };
 
         this.socketService.sendGroupEditsNotification(notificationObject);
 
+        let action = {
+          type: "Task Addition",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousValueOfTarget: "",
+          newValueOfTarget: this.itemName,
+          authToken: this.authToken
+        }
+
+        this.mainService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
       } else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
@@ -348,20 +304,53 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     this.itemName = value
   }
 
-  // function to execute when sub toDo task is added
+  // // function to execute when sub toDo task is added
   subItemModalFormSubmit() {
+
     this.subItemName = this.subItemModalForm.controls.subItemName.value;
+
     if (this.subTaskMapping[this.itemName] !== undefined) {
       for (let i of this.subTaskMapping[this.itemName]) {
         this.subItemsList.push(i)
       }
     }
+
+    let action = {
+      authToken: this.authToken,
+      type: "Task Edited",
+      fromId: this.userInfo.userId,
+      collabLeaderId: this.collabLeaderId,
+      projectName: this.projectName,
+      alternatePreviousValue: {
+        itemName: this.itemName,
+        status: false,
+        subItems: this.subItemsList
+      }
+    }
+
     this.subItemsList.push(this.subItemName)
+
+    action['alternateNewValue'] = {
+      itemName: this.itemName,
+      status: false,
+      subItems: this.subItemsList
+    }
+
+    this.mainService.addNewAction(action).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+      }
+    }, (err) => {
+      this.toastr.error("Some Error occured")
+    })
 
     this.destroysItemModal();
 
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectName,
       itemName: this.itemName,
@@ -376,10 +365,10 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
         let notificationObject = {
           fromId: this.userInfo.userId,
-          toId: this.userInfo.userId,
-          type: "toDo Owner action",
+          toId: this.collabLeaderId,
+          type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new sub-task`,
-          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          fullName: this.collabLeaderName,
           refreshItemList: true
         }
 
@@ -394,10 +383,10 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     })
   }
 
-  // function to execute when sub items are to be updated on DOM
+  // // function to execute when sub items are to be updated on DOM
   updateSubItemsInDom() {
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken
     }
     this.mainService.getItemList(data).subscribe((apiResult) => {
@@ -419,7 +408,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             }
             console.log(this.subTaskMapping)
             this.subItemsList.splice(0, this.subItemsList.length)
-
           }
         }
       } else {
@@ -430,7 +418,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     })
   }
 
-  // function to execute when item is marked as Done
+  // // function to execute when item is marked as Done
   markedAsDone(value) {
     this.itemName = value;
     if (this.subTaskMapping[this.itemName] !== undefined) {
@@ -440,7 +428,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     }
 
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectName,
       itemName: this.itemName,
@@ -448,33 +436,61 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       subItemsList: this.subItemsList
     }
 
+    let action = {
+      authToken: this.authToken,
+      type: "Task Edited",
+      fromId: this.userInfo.userId,
+      collabLeaderId: this.collabLeaderId,
+      projectName: this.projectName,
+      previousValueOfTarget: this.itemName,
+      alternatePreviousValue: {
+        itemName: this.itemName,
+        status: false,
+        subItems: this.subItemsList
+      },
+      alternateNewValue: {
+        itemName: this.itemName,
+        status: true,
+        subItems: this.subItemsList
+      }
+    }
+
+    this.mainService.addNewAction(action).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+      }
+    }, (err) => {
+      this.toastr.error("Some Error occured")
+    })
+
     this.mainService.markTaskAsDone(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.statusMapping[this.itemName] = true;
-        console.log(this.statusMapping)
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.toastr.success(apiResult.message, '', { timeOut: 1450 })
 
         let notificationObject = {
           fromId: this.userInfo.userId,
-          toId: this.userInfo.userId,
-          type: "toDo Owner action",
+          toId: this.collabLeaderId,
+          type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} marked task: ${this.itemName} as Completed`,
-          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          fullName: this.collabLeaderName,
           refreshItemList: true
-        };
+        }
 
         this.socketService.sendGroupEditsNotification(notificationObject);
-
       }
       else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.toastr.error(apiResult.message, '', { timeOut: 1450 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
   }
 
-  // function to execute to edit the item name
+  // // function to execute to edit the item name
   editItemModalFormSubmit() {
 
     if (this.subTaskMapping[this.itemName] !== undefined) {
@@ -487,7 +503,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
     let newItemName = this.editItemModalForm.controls.editItemName.value
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectName,
       itemName: this.itemName,
@@ -495,6 +511,38 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       status: this.statusMapping[this.itemName],
       subItemsList: this.subItemsList
     }
+    console.log(data)
+
+    let action = {
+      authToken: this.authToken,
+      type: "Task Edited",
+      fromId: this.userInfo.userId,
+      collabLeaderId: this.collabLeaderId,
+      projectName: this.projectName,
+      previousValueOfTarget: this.itemName,
+      alternatePreviousValue: {
+        itemName: this.itemName,
+        status: this.statusMapping[this.itemName],
+        subItems: this.subItemsList
+      },
+      alternateNewValue: {
+        itemName: newItemName,
+        status: this.statusMapping[this.itemName],
+        subItems: this.subItemsList
+      }
+    }
+
+    this.mainService.addNewAction(action).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+      }
+    }, (err) => {
+      this.toastr.error("Some Error occured")
+    })
+
     this.mainService.editItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         for (let i in apiResult.data.projects) {
@@ -527,16 +575,17 @@ export class ViewTaskComponent implements OnInit, CheckUser {
           }
         }
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        let previousName = this.itemName
         this.itemName = newItemName;
 
         let notificationObject = {
           fromId: this.userInfo.userId,
-          toId: this.userInfo.userId,
-          type: "toDo Owner action",
+          toId: this.collabLeaderId,
+          type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} renamed a task as ${this.itemName}`,
-          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          fullName: this.collabLeaderName,
           refreshItemList: true
-        };
+        }
 
         this.socketService.sendGroupEditsNotification(notificationObject);
 
@@ -548,18 +597,17 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     })
   }
 
-  // function to delete 
+  // // function to delete 
   deleteTask(value) {
     this.itemName = value;
     let data = {
-      userId: this.userInfo.userId,
+      userId: this.collabLeaderId,
       authToken: this.authToken,
       projectName: this.projectName,
       itemName: this.itemName
     }
     this.mainService.deleteTask(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-
         delete this.statusMapping[this.itemName];
         this.subItemsList.splice(0, this.subItemsList.length)
         delete this.subTaskMapping[this.itemName];
@@ -579,14 +627,34 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
         let notificationObject = {
           fromId: this.userInfo.userId,
-          toId: this.userInfo.userId,
-          type: "toDo Owner action",
+          toId: this.collabLeaderId,
+          type: "Friend collab",
           notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} deleted task: ${this.itemName}`,
-          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          fullName: this.collabLeaderName,
           refreshItemList: true
         };
 
         this.socketService.sendGroupEditsNotification(notificationObject);
+
+        let action = {
+          type: "Task Deletion",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousValueOfTarget: "",
+          newValueOfTarget: this.itemName,
+          authToken: this.authToken
+        }
+
+        this.mainService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
 
       }
       else {
@@ -650,7 +718,5 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   destroysItemModal() {
     destroyModal();
   }
-  destroysNotifModal() {
-    destroyModal();
-  }
+
 }

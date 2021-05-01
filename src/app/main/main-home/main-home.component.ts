@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { AppService } from './../../app.service';
 import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
 import * as $ from 'jquery';
+import { Subscription } from 'rxjs';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -21,7 +22,10 @@ declare const destroyModal: any;
   styleUrls: ['./main-home.component.css']
 })
 
-export class MainHomeComponent implements OnInit, CheckUser {
+export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
+
+  public subscription_1: Subscription;
+  public subscription_2: Subscription;
 
   scrHeight = window.innerHeight;
   scrWidth = window.innerWidth;
@@ -46,7 +50,6 @@ export class MainHomeComponent implements OnInit, CheckUser {
   public notificationModalFlag: Boolean = false;
   public friendsModalFlag: Boolean = false;
   public friendsIdList: any = [];
-  //public friendsNameList: any = [];
   public friendsIdMapping: any = [];
 
   @HostListener('window:resize', ['$event'])
@@ -102,10 +105,15 @@ export class MainHomeComponent implements OnInit, CheckUser {
     this.receiveRealTimeNotifications();
 
     // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
-    this.receiveGroupConnectionsNotifications();
+    this.receiveGroupNotifications();
 
     // getting all the project lists
     this.getProjectLists()
+  }
+
+  ngOnDestroy() {
+    this.subscription_1.unsubscribe();
+    this.subscription_2.unsubscribe();
   }
 
   // fucntion to check the authToken/session of the user
@@ -165,15 +173,18 @@ export class MainHomeComponent implements OnInit, CheckUser {
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
-    this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
+    this.subscription_2 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
     })
   } // end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
-  receiveGroupConnectionsNotifications() {
-    this.socketService.receiveGroupConnectionsNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 6000 })
+  receiveGroupNotifications() {
+    this.subscription_1 = this.socketService.receiveGroupNotifications().subscribe((data) => {
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
+      if (data.refreshProjectList === true) {
+        this.getProjectLists();
+      }
     })
   } // end of receiveGroupConnectionsNotifications
 
@@ -201,9 +212,6 @@ export class MainHomeComponent implements OnInit, CheckUser {
             this.notificationsMapping[notifs.notificationMessage] = false
           }
         }
-        console.log(this.notificationModalFlag)
-        console.log(this.notificationsList)
-        console.log(this.notificationsMapping)
       }
       else {
         this.notificationModalFlag = false;
@@ -299,7 +307,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     let notificationObject = {
       fromId: this.userInfo.userId,
       toId: toId,
-      type: 'Task Edit',
+      type: 'Project Edit',
       notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has connected to ${fullName}'s toDo`,
       fullName: fullName
     }
@@ -327,6 +335,7 @@ export class MainHomeComponent implements OnInit, CheckUser {
     }
     this.mainService.getProjectList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
+        this.projectNamesList.splice(0, this.projectNamesList.length)
         if (apiResult.data.projects.length === 0) {
           this.toggleMainMessage = 0;
         }
@@ -362,6 +371,17 @@ export class MainHomeComponent implements OnInit, CheckUser {
         this.toggleMainMessage = 1;
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.projectNamesList.push(this.projectValue)
+        console.log("Executed Once")
+        let notificationObject = {
+          fromId: this.userInfo.userId,
+          toId: this.userInfo.userId,
+          type: "toDo Owner action",
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new project with name ${this.projectValue}`,
+          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          refreshProjectList: true
+        };
+
+        this.socketService.sendGroupEditsNotification(notificationObject);
       } else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }

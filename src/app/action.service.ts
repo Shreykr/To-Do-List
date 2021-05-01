@@ -10,17 +10,7 @@ export class ActionService {
 
   private url = "http://localhost:3000"
 
-  constructor(public http: HttpClient) { }
+  constructor() { }
 
-  public addNewAction(data): Observable<any> {
-    const params = new HttpParams()
-      .set('type', data.type)
-      .set('fromId', data.fromId)
-      .set('collabLeaderId', data.collabLeaderId)
-      .set('previousValueOfTarget', data.previousValueOfTarget)
-      .set('newValueOfTarget', data.newValueOfTarget)
-      .set('authToken', data.authToken)
 
-    return this.http.post(`${this.url}/api/v1/actions/log-action`, params)
-  }
 }

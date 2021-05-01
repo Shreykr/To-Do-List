@@ -69,10 +69,11 @@ export class SocketService {
   }
 
   public sendConnectionStatusNotification = (notificationObject) => {
+    console.log(12)
     this.socket.emit('friend-connect-notification', notificationObject)
   }
 
-  public receiveGroupConnectionsNotifications = () => {
+  public receiveGroupNotifications = () => {
     return Observable.create((observer) => {
       this.socket.on('friend-group-notification', (data) => {
         observer.next(data)

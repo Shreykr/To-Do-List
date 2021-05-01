@@ -7,6 +7,7 @@ import { PasswordRecoveryComponent } from './user/password-recovery/password-rec
 import { MainHomeComponent } from './main/main-home/main-home.component';
 import { ViewTaskComponent } from './main/view-task/view-task.component';
 import { CollabHomeComponent } from './main/collab-home/collab-home.component';
+import { CollabViewTaskComponent } from './main/collab-view-task/collab-view-task.component';
 
 //Modules
 import { NgModule } from '@angular/core';
@@ -30,7 +31,8 @@ import { ActionService } from './action.service';
     PasswordRecoveryComponent,
     MainHomeComponent,
     ViewTaskComponent,
-    CollabHomeComponent
+    CollabHomeComponent,
+    CollabViewTaskComponent
   ],
   imports: [
     BrowserModule,
@@ -45,6 +47,7 @@ import { ActionService } from './action.service';
       { path: 'main-home', component: MainHomeComponent },
       { path: 'view-task/:projectName', component: ViewTaskComponent },
       { path: 'collab-home/:toId', component: CollabHomeComponent },
+      { path: 'collab-view-task/:toId/:projectName', component: CollabViewTaskComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: '*', component: HomeComponent },
