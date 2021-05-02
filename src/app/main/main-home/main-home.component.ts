@@ -174,14 +174,14 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_2 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
     })
   } // end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
   receiveGroupNotifications() {
     this.subscription_1 = this.socketService.receiveGroupNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
       if (data.refreshProjectList === true) {
         this.getProjectLists();
       }

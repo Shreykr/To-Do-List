@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import * as $ from 'jquery';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Subscription } from 'rxjs';
+import { ActionService } from 'src/app/action.service';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -87,6 +88,7 @@ export class CollabViewTaskComponent implements OnInit {
     private location: Location,
     public appService: AppService,
     public mainService: MainService,
+    public actionService: ActionService,
     public socketService: SocketService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
@@ -153,21 +155,20 @@ export class CollabViewTaskComponent implements OnInit {
   //dummy test function
   public connected: any = () => {
     this.socketService.connected().subscribe((data) => {
-      console.log(data)
     })
   }// end of connected
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_1 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
     })
   }// end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
   receiveGroupNotifications() {
     this.subscription_2 = this.socketService.receiveGroupNotifications().subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
       if (data.refreshItemList === true) {
         this.getMainItemList()
       }
@@ -237,11 +238,9 @@ export class CollabViewTaskComponent implements OnInit {
 
   // receiving task name in modal.
   itemModalFormSubmit() {
-    console.log(this.itemModalForm)
+
     this.itemName = this.itemModalForm.controls.itemName.value;
-
     this.destroysItemModal();
-
     let data = {
       userId: this.collabLeaderId,
       authToken: this.authToken,
@@ -276,14 +275,19 @@ export class CollabViewTaskComponent implements OnInit {
           type: "Task Addition",
           fromId: this.userInfo.userId,
           collabLeaderId: this.collabLeaderId,
-          previousValueOfTarget: "",
-          newValueOfTarget: this.itemName,
+          previousProjectName: this.projectName,
+          currentProjectName: this.projectName,
+          previousItemName: '',
+          currentItemName: this.itemName,
+          previousStatus: false,
+          currentStatus: false,
+          previousSubItems: [],
+          currentSubItems: [],
           authToken: this.authToken
         }
-
-        this.mainService.addNewAction(action).subscribe((apiResult) => {
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
           if (apiResult.status === 200) {
-            this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
@@ -297,58 +301,25 @@ export class CollabViewTaskComponent implements OnInit {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of itemModalFormSubmit
 
   // to set the item value before making updates on the item
   getItemName(value) {
     this.itemName = value
-  }
+  } // end of getItemName
 
   // // function to execute when sub toDo task is added
   subItemModalFormSubmit() {
-
+    let tempSubList = []
     this.subItemName = this.subItemModalForm.controls.subItemName.value;
-
     if (this.subTaskMapping[this.itemName] !== undefined) {
       for (let i of this.subTaskMapping[this.itemName]) {
         this.subItemsList.push(i)
       }
     }
-
-    let action = {
-      authToken: this.authToken,
-      type: "Task Edited",
-      fromId: this.userInfo.userId,
-      collabLeaderId: this.collabLeaderId,
-      projectName: this.projectName,
-      alternatePreviousValue: {
-        itemName: this.itemName,
-        status: false,
-        subItems: this.subItemsList
-      }
-    }
-
+    tempSubList = [...this.subItemsList]
     this.subItemsList.push(this.subItemName)
-
-    action['alternateNewValue'] = {
-      itemName: this.itemName,
-      status: false,
-      subItems: this.subItemsList
-    }
-
-    this.mainService.addNewAction(action).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-      }
-      else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
-      }
-    }, (err) => {
-      this.toastr.error("Some Error occured")
-    })
-
     this.destroysItemModal();
-
     let data = {
       userId: this.collabLeaderId,
       authToken: this.authToken,
@@ -360,6 +331,32 @@ export class CollabViewTaskComponent implements OnInit {
     this.mainService.updateItemInList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+
+        let action = {
+          type: "Sub-Task Added",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousProjectName: this.projectName,
+          currentProjectName: this.projectName,
+          previousItemName: this.itemName,
+          currentItemName: this.itemName,
+          previousStatus: this.statusMapping[this.itemName],
+          currentStatus: this.statusMapping[this.itemName],
+          previousSubItems: tempSubList,
+          currentSubItems: this.subItemsList,
+          authToken: this.authToken
+        }
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
+
         this.subItemsList.splice(0, this.subItemsList.length);
         delete this.subTaskMapping[this.itemName];
 
@@ -367,13 +364,11 @@ export class CollabViewTaskComponent implements OnInit {
           fromId: this.userInfo.userId,
           toId: this.collabLeaderId,
           type: "Friend collab",
-          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new sub-task`,
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} added a new sub-task: ${this.subItemName}`,
           fullName: this.collabLeaderName,
           refreshItemList: true
         }
-
         this.socketService.sendGroupEditsNotification(notificationObject);
-
         this.updateSubItemsInDom();
       } else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
@@ -381,7 +376,7 @@ export class CollabViewTaskComponent implements OnInit {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of subItemModalFormSubmit
 
   // // function to execute when sub items are to be updated on DOM
   updateSubItemsInDom() {
@@ -416,7 +411,7 @@ export class CollabViewTaskComponent implements OnInit {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of updateSubItemsInDom
 
   // // function to execute when item is marked as Done
   markedAsDone(value) {
@@ -426,7 +421,6 @@ export class CollabViewTaskComponent implements OnInit {
         this.subItemsList.push(i)
       }
     }
-
     let data = {
       userId: this.collabLeaderId,
       authToken: this.authToken,
@@ -435,37 +429,6 @@ export class CollabViewTaskComponent implements OnInit {
       status: this.statusMapping[this.itemName],
       subItemsList: this.subItemsList
     }
-
-    let action = {
-      authToken: this.authToken,
-      type: "Task Edited",
-      fromId: this.userInfo.userId,
-      collabLeaderId: this.collabLeaderId,
-      projectName: this.projectName,
-      previousValueOfTarget: this.itemName,
-      alternatePreviousValue: {
-        itemName: this.itemName,
-        status: false,
-        subItems: this.subItemsList
-      },
-      alternateNewValue: {
-        itemName: this.itemName,
-        status: true,
-        subItems: this.subItemsList
-      }
-    }
-
-    this.mainService.addNewAction(action).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-      }
-      else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
-      }
-    }, (err) => {
-      this.toastr.error("Some Error occured")
-    })
-
     this.mainService.markTaskAsDone(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.statusMapping[this.itemName] = true;
@@ -479,8 +442,32 @@ export class CollabViewTaskComponent implements OnInit {
           fullName: this.collabLeaderName,
           refreshItemList: true
         }
-
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let action = {
+          type: "Task Completed",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousProjectName: this.projectName,
+          currentProjectName: this.projectName,
+          previousItemName: this.itemName,
+          currentItemName: this.itemName,
+          previousStatus: false,
+          currentStatus: true,
+          previousSubItems: this.subItemsList,
+          currentSubItems: this.subItemsList,
+          authToken: this.authToken
+        }
+
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1450 })
@@ -488,7 +475,7 @@ export class CollabViewTaskComponent implements OnInit {
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of markedAsDone
 
   // // function to execute to edit the item name
   editItemModalFormSubmit() {
@@ -498,9 +485,7 @@ export class CollabViewTaskComponent implements OnInit {
         this.subItemsList.push(i)
       }
     }
-
     this.destroysItemModal();
-
     let newItemName = this.editItemModalForm.controls.editItemName.value
     let data = {
       userId: this.collabLeaderId,
@@ -511,40 +496,34 @@ export class CollabViewTaskComponent implements OnInit {
       status: this.statusMapping[this.itemName],
       subItemsList: this.subItemsList
     }
-    console.log(data)
-
-    let action = {
-      authToken: this.authToken,
-      type: "Task Edited",
-      fromId: this.userInfo.userId,
-      collabLeaderId: this.collabLeaderId,
-      projectName: this.projectName,
-      previousValueOfTarget: this.itemName,
-      alternatePreviousValue: {
-        itemName: this.itemName,
-        status: this.statusMapping[this.itemName],
-        subItems: this.subItemsList
-      },
-      alternateNewValue: {
-        itemName: newItemName,
-        status: this.statusMapping[this.itemName],
-        subItems: this.subItemsList
-      }
-    }
-
-    this.mainService.addNewAction(action).subscribe((apiResult) => {
-      if (apiResult.status === 200) {
-        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-      }
-      else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1550 })
-      }
-    }, (err) => {
-      this.toastr.error("Some Error occured")
-    })
-
     this.mainService.editItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
+
+        let action = {
+          type: "Task Edited",
+          fromId: this.userInfo.userId,
+          collabLeaderId: this.collabLeaderId,
+          previousProjectName: this.projectName,
+          currentProjectName: this.projectName,
+          previousItemName: this.itemName,
+          currentItemName: newItemName,
+          previousStatus: this.statusMapping[this.itemName],
+          currentStatus: this.statusMapping[this.itemName],
+          previousSubItems: this.subItemsList,
+          currentSubItems: this.subItemsList,
+          authToken: this.authToken
+        }
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 1550 })
+          }
+        }, (err) => {
+          this.toastr.error("Some Error occured")
+        })
+
         for (let i in apiResult.data.projects) {
           for (let j in apiResult.data.projects[i].items) {
             if (apiResult.data.projects[i].name === this.projectName && apiResult.data.projects[i].items[j].itemName === newItemName) {
@@ -575,27 +554,23 @@ export class CollabViewTaskComponent implements OnInit {
           }
         }
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-        let previousName = this.itemName
-        this.itemName = newItemName;
 
         let notificationObject = {
           fromId: this.userInfo.userId,
           toId: this.collabLeaderId,
           type: "Friend collab",
-          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} renamed a task as ${this.itemName}`,
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} renamed a task as ${newItemName}`,
           fullName: this.collabLeaderName,
           refreshItemList: true
         }
-
         this.socketService.sendGroupEditsNotification(notificationObject);
-
       } else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of editItemModalFormSubmit
 
   // // function to delete 
   deleteTask(value) {
@@ -606,6 +581,9 @@ export class CollabViewTaskComponent implements OnInit {
       projectName: this.projectName,
       itemName: this.itemName
     }
+    let status = this.statusMapping[this.itemName]
+    let tempSubList = []
+    tempSubList = [...this.subTaskMapping[this.itemName]]
     this.mainService.deleteTask(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         delete this.statusMapping[this.itemName];
@@ -633,21 +611,24 @@ export class CollabViewTaskComponent implements OnInit {
           fullName: this.collabLeaderName,
           refreshItemList: true
         };
-
         this.socketService.sendGroupEditsNotification(notificationObject);
-
         let action = {
-          type: "Task Deletion",
+          type: "Task Deleted",
           fromId: this.userInfo.userId,
           collabLeaderId: this.collabLeaderId,
-          previousValueOfTarget: "",
-          newValueOfTarget: this.itemName,
+          previousProjectName: this.projectName,
+          currentProjectName: this.projectName,
+          previousItemName: this.itemName,
+          currentItemName: '',
+          previousStatus: status,
+          currentStatus: false,
+          previousSubItems: tempSubList,
+          currentSubItems: '',
           authToken: this.authToken
         }
-
-        this.mainService.addNewAction(action).subscribe((apiResult) => {
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
           if (apiResult.status === 200) {
-            this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+            //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
@@ -676,8 +657,12 @@ export class CollabViewTaskComponent implements OnInit {
         Cookie.delete('authtoken');
         Cookie.delete('userId');
         Cookie.delete('collabLeaderId');
+        Cookie.delete('projectName')
+        Cookie.delete('collabLeaderName')
         this.router.navigate(['/']);
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        setTimeout(() => {
+          this.toastr.success(apiResult.message, '', { timeOut: 3550 })
+        }, 2000);
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })

@@ -58,7 +58,6 @@ export class MainService {
     params = params.set('itemName', data.itemName)
     params = params.set('status', data.status)
     for (let i of data.subItemsList) {
-      console.log(i)
       params = params.append('subItems', i)
     }
     return this.http.post(`${this.url}/api/v1/main/add-sub-item`, params)
@@ -156,16 +155,6 @@ export class MainService {
     return this.http.post(`${this.url}/api/v1/main/check-friendship`, params)
   }
 
-  public addNewAction(data): Observable<any> {
-    const params = new HttpParams()
-      .set('type', data.type)
-      .set('fromId', data.fromId)
-      .set('collabLeaderId', data.collabLeaderId)
-      .set('previousValueOfTarget', data.previousValueOfTarget)
-      .set('newValueOfTarget', data.newValueOfTarget)
-      .set('authToken', data.authToken)
 
-    return this.http.post(`${this.url}/api/v1/actions/log-action`, params)
-  }
 
 }

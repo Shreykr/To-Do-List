@@ -149,7 +149,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_1 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 4000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
     })
   } // end of receiveRealTimeNotifications
 
@@ -157,7 +157,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   receiveGroupNotifications() {
     this.subscription_2 = this.socketService.receiveGroupNotifications().subscribe((data) => {
       console.log("Executed")
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 9000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
       if (data.refreshProjectList === true) {
         this.getMainProjectLists();
       }
@@ -195,6 +195,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
 
   // receiving project name in modal
   mainModalFormSubmit() {
+
     this.projectValue = this.projectModalForm.controls.projectName.value;
     this.destroysProfileModal();
 
@@ -203,7 +204,6 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       authToken: this.authToken,
       projectName: this.projectValue
     }
-
     this.mainService.addNewProjectList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.toggleMainMessage = 1;
@@ -218,19 +218,22 @@ export class CollabHomeComponent implements OnInit, CheckUser {
           fullName: this.collabLeaderName,
           refreshProjectList: true
         };
-
         this.socketService.sendGroupEditsNotification(notificationObject);
-
         let action = {
-          type: "Project Addition",
+          type: "Project Added",
           fromId: this.userInfo.userId,
           collabLeaderId: this.collabLeaderId,
-          previousValueOfTarget: "",
-          newValueOfTarget: this.projectModalForm.controls.projectName.value,
+          previousProjectName: '',
+          currentProjectName: this.projectValue,
+          previousItemName: '',
+          currentItemName: '',
+          previousStatus: false,
+          currentStatus: false,
+          previousSubItems: [],
+          currentSubItems: [],
           authToken: this.authToken
         }
-
-        this.mainService.addNewAction(action).subscribe((apiResult) => {
+        this.actionService.addNewAction(action).subscribe((apiResult) => {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
