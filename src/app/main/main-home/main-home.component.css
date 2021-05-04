@@ -47,6 +47,11 @@
     color:white;
 }
 
+.undo-button{
+    width:140px;
+    background-color: #037e35;
+    color:white;
+}
 
 @keyframes expand{
     0%{

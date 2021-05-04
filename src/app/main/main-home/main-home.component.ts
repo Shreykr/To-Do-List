@@ -9,6 +9,7 @@ import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
+import { ActionService } from 'src/app/action.service';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -51,6 +52,8 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public friendsModalFlag: Boolean = false;
   public friendsIdList: any = [];
   public friendsIdMapping: any = [];
+  public toggleUndoButton: Boolean = false;
+  public undoObject = {};
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -66,6 +69,14 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     }
   }
 
+  @HostListener('window:keydown', ['$event'])
+  handleUndoEvent(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === 'z') {
+      this.performUndoOperation();
+    }
+    this.handleKeyboardEvent(event)
+  }
+
   //Form group for project name
   projectModalForm = new FormGroup({
     'projectName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,25}$')])
@@ -76,6 +87,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     public appService: AppService,
     public mainService: MainService,
     public socketService: SocketService,
+    public actionService: ActionService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -109,6 +121,9 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
 
     // getting all the project lists
     this.getProjectLists()
+
+    //check if there are any friend actions logged
+    this.checkActionLogger();
   }
 
   ngOnDestroy() {
@@ -327,8 +342,31 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     })
   } // end of connectWithFriend
 
+  // function to check if there are any friend actions logged
+  public checkActionLogger() {
+    let data = {
+      fromId: this.userInfo.userId,
+      collabLeaderId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.actionService.getActions(data).subscribe((apiResult) => {
+      console.log(apiResult.status)
+      console.log(apiResult.data)
+      if (apiResult.status === 200) {
+        this.toggleUndoButton = false;
+      }
+      else if (apiResult.status === 403) {
+        this.toggleUndoButton = true;
+      }
+      console.log(this.toggleUndoButton)
+    }, (err) => {
+      this.toastr.error('Some Error Occured', '', { timeOut: 1300 })
+    })
+  } // end of checkActionLoggger
+
   // function to execute when create project is selected and submitted.
   getProjectLists() {
+    this.checkActionLogger()
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken
@@ -415,6 +453,401 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       this.toastr.error('Some error occured', '', { timeOut: 1250 })
     })
   }// end of getAllUsers
+
+  // function to perform the undo opertation based on the type of action retrieved
+  public performUndoOperation() {
+    let data1 = {
+      fromId: this.userInfo.userId,
+      collabLeaderId: this.userInfo.userId,
+      authToken: this.authToken
+    }
+    this.actionService.getActions(data1).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toggleUndoButton = false;
+        this.undoObject = apiResult.data
+        console.log(this.undoObject)
+        if (this.undoObject['type'] === "Project Added") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName']
+          }
+          this.mainService.deleteProjectList(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let data2 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                if (apiResult.status === 200) {
+                  let notificationObject = {
+                    fromId: this.userInfo.userId,
+                    toId: this.userInfo.userId,
+                    type: "Friend collab",
+                    notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted the last change done by a friend`,
+                    fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                    refreshProjectList: true
+                  }
+                  this.socketService.sendGroupEditsNotification(notificationObject);
+                }
+                else {
+                  if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                    this.toggleUndoButton = true;
+                  }
+                  else {
+                    this.toggleUndoButton = false
+                  }
+                  this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                }
+              })
+              this.getProjectLists();
+              this.checkActionLogger();
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName}, are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+        else if (this.undoObject['type'] === "Task Added") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName'],
+            itemName: this.undoObject['currentItemName']
+          }
+          this.mainService.deleteTask(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let data2 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                console.log("Action Deleted")
+                if (apiResult.status === 200) {
+                  let notificationObject = {
+                    fromId: this.userInfo.userId,
+                    toId: this.userInfo.userId,
+                    type: "Friend collab",
+                    notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted the task addition action done by a friend`,
+                    fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                    refreshItemList: true
+                  }
+                  this.socketService.sendGroupEditsNotification(notificationObject);
+                }
+                else {
+                  if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                    this.toggleUndoButton = true;
+                  }
+                  else {
+                    this.toggleUndoButton = false
+                  }
+                  this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                }
+              })
+              this.getProjectLists();
+              this.checkActionLogger();
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+        else if (this.undoObject['type'] === "Task Edited") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName'],
+            itemName: this.undoObject['currentItemName'],
+            newItemName: this.undoObject['previousItemName'],
+            status: this.undoObject['currentStatus'],
+            subItemsList: this.undoObject['currentSubItems']
+          }
+          this.mainService.editItemList(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let data2 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                if (apiResult.status === 200) {
+                  let notificationObject = {
+                    fromId: this.userInfo.userId,
+                    toId: this.userInfo.userId,
+                    type: "Friend collab",
+                    notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted the task edited action done by a friend`,
+                    fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                    refreshItemList: true
+                  }
+                  this.socketService.sendGroupEditsNotification(notificationObject);
+                }
+                else {
+                  if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                    this.toggleUndoButton = true;
+                  }
+                  else {
+                    this.toggleUndoButton = false
+                  }
+                  this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                }
+              })
+              this.getProjectLists();
+              this.checkActionLogger();
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+        else if (this.undoObject['type'] === "Task Completed") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName'],
+            itemName: this.undoObject['currentItemName'],
+            status: this.undoObject['currentStatus'],
+            subItemsList: this.undoObject['currentSubItems']
+          }
+          this.mainService.markTaskAsDone(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let data2 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                if (apiResult.status === 200) {
+                  let notificationObject = {
+                    fromId: this.userInfo.userId,
+                    toId: this.userInfo.userId,
+                    type: "Friend collab",
+                    notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted marking task as done action by a friend`,
+                    fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                    refreshItemList: true
+                  }
+                  this.socketService.sendGroupEditsNotification(notificationObject);
+                }
+                else {
+                  if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                    this.toggleUndoButton = true;
+                  }
+                  else {
+                    this.toggleUndoButton = false
+                  }
+                  this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                }
+              })
+              this.getProjectLists();
+              this.checkActionLogger();
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+        else if (this.undoObject['type'] === "Sub-Task Added") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName'],
+            itemName: this.undoObject['currentItemName'],
+            status: this.undoObject['currentStatus'],
+            subItemsList: this.undoObject['previousSubItems']
+          }
+          this.mainService.updateItemInList(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let data2 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                if (apiResult.status === 200) {
+                  let notificationObject = {
+                    fromId: this.userInfo.userId,
+                    toId: this.userInfo.userId,
+                    type: "Friend collab",
+                    notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted sub-task addition action done by a friend`,
+                    fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                    refreshItemList: true
+                  }
+                  this.socketService.sendGroupEditsNotification(notificationObject);
+                }
+                else {
+                  if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                    this.toggleUndoButton = true;
+                  }
+                  else {
+                    this.toggleUndoButton = false
+                  }
+                  this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                }
+              })
+              this.getProjectLists();
+              this.checkActionLogger();
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+        else if (this.undoObject['type'] === "Task Deleted") {
+          let projectData = {
+            authToken: this.authToken,
+            userId: this.userInfo.userId,
+            projectName: this.undoObject['currentProjectName'],
+            itemName: this.undoObject['previousItemName'],
+          }
+          this.mainService.addNewItemToProject(projectData).subscribe((apiResult) => {
+            if (apiResult.status === 200) {
+              let itemData = {
+                authToken: this.authToken,
+                userId: this.userInfo.userId,
+                projectName: this.undoObject['currentProjectName'],
+                itemName: this.undoObject['previousItemName'],
+                status: this.undoObject['previousStatus'],
+                subItemsList: this.undoObject['previousSubItems']
+              }
+              this.mainService.updateItemInList(itemData).subscribe((apiResult) => {
+                if (apiResult.status === 200) {
+                  let data2 = {
+                    authToken: this.authToken,
+                    fromId: this.userInfo.userId,
+                    collabLeaderId: this.userInfo.userId
+                  }
+                  this.actionService.deleteAction(data2).subscribe((apiResult) => {
+                    if (apiResult.status === 200) {
+                      let notificationObject = {
+                        fromId: this.userInfo.userId,
+                        toId: this.userInfo.userId,
+                        type: "Friend collab",
+                        notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} reverted task deletion action done by a friend`,
+                        fullName: this.userInfo.firstName + " " + this.userInfo.lastName,
+                        refreshItemList: true
+                      }
+                      this.socketService.sendGroupEditsNotification(notificationObject);
+                    }
+                    else {
+                      if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                        this.toggleUndoButton = true;
+                      }
+                      else {
+                        this.toggleUndoButton = false
+                      }
+                      this.toastr.error('Undo failed', '', { timeOut: 4000 })
+                    }
+                  })
+                  this.getProjectLists();
+                  this.checkActionLogger();
+                }
+              })
+            }
+            else if (apiResult.status === 403) {
+              let data3 = {
+                authToken: this.authToken,
+                fromId: this.userInfo.userId,
+                collabLeaderId: this.userInfo.userId
+              }
+              this.actionService.deleteAction(data3).subscribe((apiResult) => {
+                if (apiResult.status === 403 && apiResult.message === "No Action Found") {
+                  this.toggleUndoButton = true;
+                }
+                else {
+                  this.toggleUndoButton = false
+                }
+              })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+            }
+          }, (err) => {
+            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+          })
+        }
+      }
+      else if (apiResult.status === 403) {
+        this.toastr.error(`No actions of ${this.userInfo.firstName} ${this.userInfo.lastName}'s friend(s) is left to revert!`, '', { timeOut: 4000 })
+        this.toggleUndoButton = true;
+      }
+    })
+  } // end of performUndoOperation
 
   // user will be logged out
   logoutUser() {

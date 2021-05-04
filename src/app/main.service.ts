@@ -33,6 +33,15 @@ export class MainService {
     return this.http.post(`${this.url}/api/v1/main/add-project`, params)
   }
 
+  public deleteProjectList(data): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', data.userId)
+      .set('authToken', data.authToken)
+      .set('projectName', data.projectName)
+
+    return this.http.post(`${this.url}/api/v1/main/delete-entry`, params)
+  }
+
   public getItemList(data): Observable<any> {
     const params = new HttpParams()
       .set('userId', data.userId)
@@ -70,7 +79,6 @@ export class MainService {
     params = params.set('projectName', data.projectName)
     params = params.set('itemName', data.itemName)
     params = params.set('status', data.status)
-    console.log(data.subItemsList)
     for (let i of data.subItemsList) {
       console.log(i)
       params = params.append('subItems', i)

@@ -10,6 +10,11 @@
                 Create Project +
             </button>
         </div>
+        <div class="create mt-5" *ngIf="!toggleUndoButton">
+            <button type="button" class="btn undo-button" (click)="performUndoOperation()">
+                Undo Changes
+            </button>
+        </div>
         <div class="search mt-5" data-toggle="modal" data-target="#searchModal">
             <button type="button" class="btn search-button" (click)="getAllUsers()">
                 Search Users

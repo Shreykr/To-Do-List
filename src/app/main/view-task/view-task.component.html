@@ -15,6 +15,11 @@
                 Add Task +
             </button>
         </div>
+        <div class="create mt-5" *ngIf="!toggleUndoButton">
+            <button type="button" class="btn undo-button" (click)="performUndoOperation()">
+                Undo Changes
+            </button>
+        </div>
         <div class="notifications mt-5" data-toggle="modal" data-target="#notificationModal">
             <button type="button" class="btn btn-warning notifications-button mr-1" (click)="getAllNotifications()">
                 Notifications
