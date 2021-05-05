@@ -16,12 +16,7 @@
   to top,
   #16222a,
   #733a3a
-  ); 
-  /* background: linear-gradient(
-    to top,
-    #16222a,
-    #733a3a
-  ); */
+  );   
   min-height:100vh;
   display:flex;
   flex-flow:column nowrap;
@@ -30,12 +25,7 @@
 .form-content{    
   max-width:600px;
   margin:auto;
-  background: rgb(250, 245, 245);
-    /* background: linear-gradient(
-    to top,
-    #16222a,
-    #733a3a
-  ); */
+  background: rgb(250, 245, 245);   
   box-shadow: 8px 5px 5px #0a0a0a;
   padding:20px;
   margin-top:10rem;

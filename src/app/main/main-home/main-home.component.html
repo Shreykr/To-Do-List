@@ -5,7 +5,7 @@
 </div>
 <div id="sidenav" class="sidenav-collapse">
     <div class="container-fluid sidenav-buttons" id="sidenav-buttons">
-        <div class="create mt-5 mb-3">
+        <div class="create mt-4 mb-3">
             <button type="button" class="btn create-button" data-toggle="modal" data-target="#projectModal">
                 Create Project +
             </button>
@@ -37,168 +37,181 @@
         </div>
     </div>
 </div>
-<div id="main-content" class="main-content">
-    <div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" [ngClass]="{
+<!-- <div *ngIf="loaderService.loading | async">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div> -->
+<div class="slider-bar" *ngIf="loaderService.loading | async">
+    <div class="line-bar"></div>
+    <div class="subline-bar inc"></div>
+    <div class="subline-bar dec"></div>
+</div>
+<div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" [ngClass]="{
                                 'has-danger': ((projectModalForm.get('projectName').invalid && projectModalForm.get('projectName').dirty)||(projectModalForm.get('projectName').touched && projectModalForm.get('projectName').pristine)), 
                                 'has-success': projectModalForm.get('projectName').valid && projectModalForm.get('projectName').dirty
                               }" formControlName="projectName" data-toggle="tooltip"
-                                title="Maximum 25 alphanumeric characters">
+                            title="Maximum 25 alphanumeric characters">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
+                        class="btn btn-primary">Apply
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="searchModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">People using toDo</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+
+            </div>
+            <div class="col-12 col-sm-12 text-left mt-2">
+                <h6 class="text-muted"> (Add only trusted users as Friend to avoid possible spam)</h6>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <div *ngFor="let users of allUserList; let i=index">
+                            <li class="list-group-item">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-5 col-sm-6 text-left">
+                                            {{users.firstName}} {{users.lastName}}
+                                        </div>
+                                        <div class="col-7 col-sm-6 text-right">
+                                            <button class="btn btn-dark" (click)="sendFriendRequest(users.userId)">Add
+                                                Friend</button>
+                                        </div>
+                                    </div>
+                                    <div class="row text-muted">
+                                        <div class="col-6 col-sm-6">
+                                            {{users.country}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
-                            class="btn btn-primary">Apply
-                        </button>
-                    </div>
-                </form>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="searchModal">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">People using toDo</h3>
-                    <button type="button" class="close" data-dismiss="modal">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <ul class="list-group list-group-flush">
-                            <div *ngFor="let users of allUserList; let i=index">
-                                <li class="list-group-item">
-                                    <div class="container-fluid">
-                                        <div class="row">
-                                            <div class="col-5 col-sm-6 text-left">
-                                                {{users.firstName}} {{users.lastName}}
-                                            </div>
-                                            <div class="col-7 col-sm-6 text-right">
-                                                <button class="btn btn-dark"
-                                                    (click)="sendFriendRequest(users.userId)">Add Friend</button>
-                                            </div>
-                                        </div>
-                                        <div class="row text-muted">
-                                            <div class="col-6 col-sm-6">
-                                                {{users.country}}
-                                            </div>
-                                        </div>
+</div>
+<div class="modal fade" id="notificationModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Notifications</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" *ngIf="!notificationModalFlag">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-12 col-sm-12">
+                                        You don't have any notifications
                                     </div>
-                                </li>
+                                </div>
                             </div>
-                        </ul>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="notificationModal">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Notifications</h3>
-                    <button type="button" class="close" data-dismiss="modal">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item" *ngIf="!notificationModalFlag">
+                        </li>
+                        <div *ngFor="let notifications of notificationsList; let i=index">
+                            <li class="list-group-item">
                                 <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-12 col-sm-12">
-                                            You don't have any notifications
+                                    <div class="row" *ngIf="notificationModalFlag">
+                                        <div class="col-12 col-sm-12"
+                                            *ngIf="!notificationsMapping[notifications.notificationMessage]">
+                                            {{notifications.notificationMessage}}
+                                        </div>
+                                        <div class="col-7 col-sm-8"
+                                            *ngIf="notificationsMapping[notifications.notificationMessage]">
+                                            {{notifications.notificationMessage}}
+                                        </div>
+                                        <div class="col-5 col-sm-4 text-right"
+                                            *ngIf="notificationsMapping[notifications.notificationMessage]">
+                                            <button class="btn btn-dark"
+                                                (click)="addFriend(notifications.fromId)">Accept</button>
                                         </div>
                                     </div>
                                 </div>
                             </li>
-                            <div *ngFor="let notifications of notificationsList; let i=index">
-                                <li class="list-group-item">
-                                    <div class="container-fluid">
-                                        <div class="row" *ngIf="notificationModalFlag">
-                                            <div class="col-12 col-sm-12"
-                                                *ngIf="!notificationsMapping[notifications.notificationMessage]">
-                                                {{notifications.notificationMessage}}
-                                            </div>
-                                            <div class="col-7 col-sm-8"
-                                                *ngIf="notificationsMapping[notifications.notificationMessage]">
-                                                {{notifications.notificationMessage}}
-                                            </div>
-                                            <div class="col-5 col-sm-4 text-right"
-                                                *ngIf="notificationsMapping[notifications.notificationMessage]">
-                                                <button class="btn btn-dark"
-                                                    (click)="addFriend(notifications.fromId)">Accept</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </div>
-                        </ul>
-                    </div>
+                        </div>
+                    </ul>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="friendsModal">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">toDo Friends</h3>
-                    <button type="button" class="close" data-dismiss="modal">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item" *ngIf="!friendsModalFlag">
+</div>
+<div class="modal fade" id="friendsModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">toDo Friends</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" *ngIf="!friendsModalFlag">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-12 col-sm-12">
+                                        You don't have any friends yet.
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <div *ngFor="let friend of friendsIdMapping; let i=index">
+                            <li class="list-group-item">
                                 <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-12 col-sm-12">
-                                            You don't have any friends yet.
+                                    <div class="row" *ngIf="friendsModalFlag">
+                                        <div class="col-7 col-sm-8">
+                                            {{friend.fullName}}
+                                        </div>
+                                        <div class="col-5 col-sm-4 text-right">
+                                            <button class="btn btn-dark"
+                                                (click)="connectWithFriend(friend.userId,friend.fullName)">Connect</button>
                                         </div>
                                     </div>
                                 </div>
                             </li>
-                            <div *ngFor="let friend of friendsIdMapping; let i=index">
-                                <li class="list-group-item">
-                                    <div class="container-fluid">
-                                        <div class="row" *ngIf="friendsModalFlag">
-                                            <div class="col-7 col-sm-8">
-                                                {{friend.fullName}}
-                                            </div>
-                                            <div class="col-5 col-sm-4 text-right">
-                                                <button class="btn btn-dark"
-                                                    (click)="connectWithFriend(friend.userId,friend.fullName)">Connect</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </div>
-                        </ul>
-                    </div>
+                        </div>
+                    </ul>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
+<div id="main-content" class="main-content">
     <div class="sub-content" *ngIf="!toggleMainMessage">
         <div class="row ">
             <div class="container project-heading text-center">
@@ -208,6 +221,7 @@
     </div>
     <div class="sub-content" *ngIf="toggleMainMessage">
         <div class="row ">
+
             <div class="container project-heading text-center">
                 <h3>All projects</h3>
             </div>

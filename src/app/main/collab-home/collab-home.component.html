@@ -5,7 +5,7 @@
 </div>
 <div id="sidenav" class="sidenav-collapse">
     <div class="container-fluid sidenav-buttons" id="sidenav-buttons">
-        <div class="create mt-5 mb-3">
+        <div class="create mt-4 mb-3">
             <button type="button" class="btn create-button" data-toggle="modal" data-target="#projectModal">
                 Create Project +
             </button>
@@ -27,37 +27,45 @@
         </div>
     </div>
 </div>
-<div id="main-content" class="main-content">
-    <div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" [ngClass]="{
+<!-- <div *ngIf="loaderService.loading | async">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div> -->
+<div class="slider-bar" *ngIf="loaderService.loading | async">
+    <div class="line-bar"></div>
+    <div class="subline-bar inc"></div>
+    <div class="subline-bar dec"></div>
+</div>
+<div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Enter your project name</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form [formGroup]="projectModalForm" (ngSubmit)="mainModalFormSubmit()">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" [ngClass]="{
                                 'has-danger': ((projectModalForm.get('projectName').invalid && projectModalForm.get('projectName').dirty)||(projectModalForm.get('projectName').touched && projectModalForm.get('projectName').pristine)), 
                                 'has-success': projectModalForm.get('projectName').valid && projectModalForm.get('projectName').dirty
                               }" formControlName="projectName" data-toggle="tooltip"
-                                title="Maximum 25 alphanumeric characters">
-                        </div>
+                            title="Maximum 25 alphanumeric characters">
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
-                            class="btn btn-primary">Apply
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
+                        class="btn btn-primary">Apply
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+<div id="main-content" class="main-content">
     <div class="sub-content" *ngIf="!toggleMainMessage">
         <div class="row ">
             <div class="container project-heading text-center">

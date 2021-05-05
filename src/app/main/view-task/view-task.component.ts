@@ -7,10 +7,11 @@ import { CheckUser } from './../../CheckUser';
 import { AppService } from './../../app.service';
 import { MainService } from './../../main.service';
 import { SocketService } from './../../socket.service';
+import { ActionService } from 'src/app/action.service';
+import { LoaderService } from 'src/app/loader.service';
+import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import * as $ from 'jquery';
-import { Subscription } from 'rxjs';
-import { ActionService } from 'src/app/action.service';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -96,6 +97,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     public mainService: MainService,
     public actionService: ActionService,
     public socketService: SocketService,
+    public loaderService: LoaderService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -208,9 +210,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             this.notificationsMapping[notifs.notificationMessage] = false
           }
         }
-        console.log(this.notificationModalFlag)
-        console.log(this.notificationsList)
-        console.log(this.notificationsMapping)
       }
       else {
         this.notificationModalFlag = false;

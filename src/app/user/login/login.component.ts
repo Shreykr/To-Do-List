@@ -51,7 +51,6 @@ export class LoginComponent implements OnInit {
 
   /* Sending the data so as to sign up */
   signUpFunction(f) {
-    // TODO: Use EventEmitter with form value
     let data = {
       email: f.controls.userLoginMail.value.toLowerCase(),
       password: f.controls.userLoginPassword.value
@@ -62,7 +61,7 @@ export class LoginComponent implements OnInit {
       //console.log(`Response from backend: ${apiResult}`);
 
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message);
+        //this.toastr.success(apiResult.message);
         Cookie.set('authtoken', apiResult.data.authToken);
         Cookie.set('userId', apiResult.data.userDetails.userId);
         this.appService.setUserInfoInLocalStorage(apiResult.data.userDetails)

@@ -16,12 +16,15 @@ import { RouterModule } from '@angular/router';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 import { AppService } from './app.service';
 import { MainService } from './main.service';
 import { SocketService } from './socket.service';
 import { ActionService } from './action.service';
+import { LoaderService } from './loader.service';
+import { InterceptorService } from './interceptor.service';
 @NgModule({
   declarations: [
     AppComponent,
@@ -39,6 +42,7 @@ import { ActionService } from './action.service';
     BrowserAnimationsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    MatProgressBarModule,
     ToastrModule.forRoot(),
     RouterModule.forRoot([
       { path: 'home', component: HomeComponent },
@@ -54,7 +58,7 @@ import { ActionService } from './action.service';
       { path: '**', component: HomeComponent }
     ])
   ],
-  providers: [AppService, MainService, SocketService, ActionService],
+  providers: [AppService, MainService, SocketService, ActionService, LoaderService, { provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

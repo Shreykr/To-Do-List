@@ -5,7 +5,7 @@
 </div>
 <div id="sidenav" class="sidenav-collapse">
     <div class="container-fluid sidenav-buttons" id="sidenav-buttons">
-        <div class="create mt-5">
+        <div class="create mt-4">
             <button type="button" class="btn create-button" data-toggle="modal" data-target="#taskModal">
                 Add Task +
             </button>
@@ -32,146 +32,155 @@
         </div>
     </div>
 </div>
-<div id="main-content" class="main-content">
-    <div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">Enter the name of Task</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form [formGroup]="itemModalForm" (ngSubmit)="itemModalFormSubmit()">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" [ngClass]="{
+<!-- <div *ngIf="loaderService.loading | async">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div> -->
+<div class="slider-bar" *ngIf="loaderService.loading | async">
+    <div class="line-bar"></div>
+    <div class="subline-bar inc"></div>
+    <div class="subline-bar dec"></div>
+</div>
+<div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Enter the name of Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form [formGroup]="itemModalForm" (ngSubmit)="itemModalFormSubmit()">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" [ngClass]="{
                                 'has-danger': ((itemModalForm.get('itemName').invalid && itemModalForm.get('itemName').dirty)||(itemModalForm.get('itemName').touched && itemModalForm.get('itemName').pristine)),
                                 'has-success': itemModalForm.get('itemName').valid && itemModalForm.get('itemName').dirty
                               }" formControlName="itemName" data-toggle="tooltip"
-                                title="Maximum 25 alphanumeric characters">
-                        </div>
+                            title="Maximum 25 alphanumeric characters">
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!itemModalForm.get('itemName').valid"
-                            class="btn btn-primary">Apply
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="subTaskModal" tabindex="-1" role="dialog" aria-labelledby="subtaskModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalCenterTitle">Enter the name of Sub-Task</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
-                        <span aria-hidden="true">&times;</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!itemModalForm.get('itemName').valid"
+                        class="btn btn-primary">Apply
                     </button>
                 </div>
-                <form [formGroup]="subItemModalForm" (ngSubmit)="subItemModalFormSubmit()">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" [ngClass]="{
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="subTaskModal" tabindex="-1" role="dialog" aria-labelledby="subtaskModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Enter the name of Sub-Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form [formGroup]="subItemModalForm" (ngSubmit)="subItemModalFormSubmit()">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" [ngClass]="{
                                 'has-danger': ((subItemModalForm.get('subItemName').invalid && subItemModalForm.get('subItemName').dirty)||(subItemModalForm.get('subItemName').touched && subItemModalForm.get('subItemName').pristine)),
                                 'has-success': subItemModalForm.get('subItemName').valid && subItemModalForm.get('subItemName').dirty
                               }" formControlName="subItemName" data-toggle="tooltip"
-                                title="Maximum 20 alphanumeric characters">
-                        </div>
+                            title="Maximum 20 alphanumeric characters">
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!subItemModalForm.get('subItemName').valid"
-                            class="btn btn-primary">Apply
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalCenterTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalCenterTitle">Enter the new Task name</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
-                        <span aria-hidden="true">&times;</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!subItemModalForm.get('subItemName').valid"
+                        class="btn btn-primary">Apply
                     </button>
                 </div>
-                <form [formGroup]="editItemModalForm" (ngSubmit)="editItemModalFormSubmit()">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" [ngClass]="{
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editItemModal" tabindex="-1" role="dialog" aria-labelledby="editItemModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Enter the new Task name</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-tooltip="">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form [formGroup]="editItemModalForm" (ngSubmit)="editItemModalFormSubmit()">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" [ngClass]="{
                                 'has-danger': ((editItemModalForm.get('editItemName').invalid && editItemModalForm.get('editItemName').dirty)||(editItemModalForm.get('editItemName').touched && editItemModalForm.get('editItemName').pristine)),
                                 'has-success': editItemModalForm.get('editItemName').valid && editItemModalForm.get('editItemName').dirty
                               }" formControlName="editItemName" data-toggle="tooltip"
-                                title="Maximum 25 alphanumeric characters">
-                        </div>
+                            title="Maximum 25 alphanumeric characters">
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" [disabled]="!editItemModalForm.get('editItemName').valid"
-                            class="btn btn-primary">Apply
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" [disabled]="!editItemModalForm.get('editItemName').valid"
+                        class="btn btn-primary">Apply
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="modal fade" id="notificationModal">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Notifications</h3>
-                    <button type="button" class="close" data-dismiss="modal">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item" *ngIf="!notificationModalFlag">
+</div>
+<div class="modal fade" id="notificationModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Notifications</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" *ngIf="!notificationModalFlag">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-12 col-sm-12">
+                                        You don't have any notifications
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <div *ngFor="let notifications of notificationsList; let i=index">
+                            <li class="list-group-item">
                                 <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-12 col-sm-12">
-                                            You don't have any notifications
+                                    <div class="row" *ngIf="notificationModalFlag">
+                                        <div class="col-12 col-sm-12"
+                                            *ngIf="!notificationsMapping[notifications.notificationMessage]">
+                                            {{notifications.notificationMessage}}
+                                        </div>
+                                        <div class="col-7 col-sm-8"
+                                            *ngIf="notificationsMapping[notifications.notificationMessage]">
+                                            {{notifications.notificationMessage}}
+                                        </div>
+                                        <div class="col-5 col-sm-4 text-right"
+                                            *ngIf="notificationsMapping[notifications.notificationMessage]">
+                                            <button class="btn btn-dark"
+                                                (click)="addFriend(notifications.fromId)">Accept</button>
                                         </div>
                                     </div>
                                 </div>
                             </li>
-                            <div *ngFor="let notifications of notificationsList; let i=index">
-                                <li class="list-group-item">
-                                    <div class="container-fluid">
-                                        <div class="row" *ngIf="notificationModalFlag">
-                                            <div class="col-12 col-sm-12"
-                                                *ngIf="!notificationsMapping[notifications.notificationMessage]">
-                                                {{notifications.notificationMessage}}
-                                            </div>
-                                            <div class="col-7 col-sm-8"
-                                                *ngIf="notificationsMapping[notifications.notificationMessage]">
-                                                {{notifications.notificationMessage}}
-                                            </div>
-                                            <div class="col-5 col-sm-4 text-right"
-                                                *ngIf="notificationsMapping[notifications.notificationMessage]">
-                                                <button class="btn btn-dark"
-                                                    (click)="addFriend(notifications.fromId)">Accept</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </div>
-                        </ul>
-                    </div>
+                        </div>
+                    </ul>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
+<div id="main-content" class="main-content">
     <div class="sub-content" *ngIf="!toggleMainMessage">
         <div class="row ">
             <div class="container task-heading text-center">
@@ -183,7 +192,7 @@
         <div class="row ">
             <div class="container task-heading text-center">
                 <h3>Tasks in
-                    {{projectName}}</h3>
+                    {{projectName}} Project</h3>
             </div>
         </div>
         <div class="row">

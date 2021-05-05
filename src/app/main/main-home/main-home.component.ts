@@ -10,6 +10,7 @@ import { SocketService } from './../../socket.service';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
 import { ActionService } from 'src/app/action.service';
+import { LoaderService } from 'src/app/loader.service';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -88,6 +89,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     public mainService: MainService,
     public socketService: SocketService,
     public actionService: ActionService,
+    public loaderService: LoaderService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -214,7 +216,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         this.notificationModalFlag = true;
         this.notificationsList.splice(0, this.notificationsList.length)
         this.notifTrackerList.splice(0, this.notifTrackerList.length)
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         for (let notifs of apiResult.data) {
           if (notifs.type === "Friend Request" && !this.notifTrackerList.includes(notifs.createdOn)) {
             this.notificationsList.push(notifs)
@@ -277,7 +279,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     }
     this.mainService.getUserFriendList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        console.log(apiResult.data['friendsList'])
         for (let i of apiResult.data['friendsList']) {
           if (!this.friendsIdList.includes(i['userId'])) {
             this.friendsIdList.push(i['userId'])
@@ -306,9 +307,8 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
             }
           })
         }
-        console.log(this.friendsIdMapping)
         this.friendsModalFlag = true;
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
       else {
         this.friendsModalFlag = false;
@@ -333,7 +333,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     }
     this.mainService.checkForFriendship(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.socketService.sendConnectionStatusNotification(notificationObject)
         Cookie.set('collabLeaderId', toId)
         Cookie.set('collabLeaderName', fullName)
@@ -424,6 +424,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
+      console.log(`this`)
       this.toastr.error("Some Error Occured");
     })
   } // end of mainModalFormSubmit
@@ -444,7 +445,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
             this.allUserList = [...new Set(tempList)]
           }
         }
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
@@ -870,7 +871,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   }  // end of logoutUser
 
   // logic to change sidebar position based on screen width
-  // requires screen refresh after changing to screen size < 750px width.
+  // requires screen refresh after changing screen sizes < 750px
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();

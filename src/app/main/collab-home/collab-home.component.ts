@@ -10,6 +10,7 @@ import { SocketService } from './../../socket.service';
 import { ActionService } from 'src/app/action.service';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
+import { LoaderService } from 'src/app/loader.service';
 
 
 declare const openNavgationBarv1: any;
@@ -84,6 +85,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     public mainService: MainService,
     public socketService: SocketService,
     public actionService: ActionService,
+    public loaderService: LoaderService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
@@ -300,7 +302,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     }
     this.mainService.checkForFriendship(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         Cookie.set('projectName', projectNameSelected)
         this.router.navigate(['/collab-view-task', this.collabLeaderId, projectNameSelected])
       }

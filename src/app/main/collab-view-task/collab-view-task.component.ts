@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
 import { ActionService } from 'src/app/action.service';
+import { LoaderService } from 'src/app/loader.service';
 
 declare const openNavgationBarv1: any;
 declare const closeNavigationBarv1: any;
@@ -99,6 +100,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     public mainService: MainService,
     public actionService: ActionService,
     public socketService: SocketService,
+    public loaderService: LoaderService,
     public toastr: ToastrService
   ) { this.getScreenSize(); }
 
