@@ -195,14 +195,14 @@
             </div>
         </div>
         <div class="row">
-            <div *ngFor="let item of itemNamesList" class="col-sm-4 col-md-6 col-lg-4 col-xl-4">
+            <div *ngFor="let item of itemNamesList" class="col-sm-12 col-md-6 col-lg-4 col-xl-4">
                 <div class="card text-center text-white bg-dark mb-3 " [ngClass]="{
                     'has-danger': !statusMapping[item],
                     'has-success': statusMapping[item]
-                  }" style="max-width: 30rem;border-radius:10px;">
+                  }" style="border-radius:10px;">
                     <div class="card-body">
                         <h5 class="card-title">{{item}}</h5>
-                        <div class="sub-tasks-node w-50">
+                        <div class="sub-tasks-node text-justify">
                             <ul *ngFor="let subTask of subTaskMapping[item]; let i = index">
                                 <li>{{subTask}}</li>
                             </ul>

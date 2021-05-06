@@ -1,0 +1,42 @@
+:root{
+    font-size: 20px;
+  }
+
+/* * {
+  border: 1px solid rgb(153, 0, 255) !important;
+}  */
+
+.error-image{
+    width:100%;
+    height:auto;
+    max-width:500px;
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+}
+
+.server-error-image{
+    width:100%;
+    height:auto;
+    max-width:500px;
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+}
+
+@media screen and (min-width: 319px) and (max-width:415px) {      
+    .error-text{
+        font-size:2rem;
+    }
+}
+@media screen and (min-width: 416px) and (max-width:750px) {      
+    .error-text{
+        font-size:2.5rem;
+    }
+}
+
+@media screen and (min-width: 750px) {      
+    .error-text{
+        font-size:2.75rem;
+    }
+}

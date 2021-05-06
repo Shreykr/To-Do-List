@@ -49,8 +49,15 @@ export class PasswordRecoveryComponent implements OnInit {
           this.goToLogin();
         }, 2000);
       }
-      else {
+      else if (apiResult.status === 404) {
         apiResult.message = "This link is either invalid or expired."
+        this.toastr.error(apiResult.message);
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.router.navigate(['server-error', 500])
+      }
+      else {
         this.toastr.error(apiResult.message)
       }
     }, (err) => {

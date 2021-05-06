@@ -107,31 +107,40 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     this.destroyAllModal();
 
     // checking the user
-    this.checkStatus();
+    if (this.checkStatus()) {
+      //testing socket connection
+      this.verifyUserConfirmation();
 
-    //testing socket connection
-    this.verifyUserConfirmation();
+      //dummy test function
+      this.connected();
 
-    //dummy test function
-    this.connected();
+      // receiving real time notifications to subscribed socket events
+      this.receiveRealTimeNotifications();
 
-    // receiving real time notifications to subscribed socket events
-    this.receiveRealTimeNotifications();
+      // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
+      this.receiveGroupNotifications();
 
-    // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
-    this.receiveGroupNotifications();
+      // getting all the project lists
+      this.getMainProjectLists();
 
-    // getting all the project lists
-    this.getMainProjectLists();
-
-    //check if there are any friend actions logged
-    this.checkActionLogger();
-
+      //check if there are any friend actions logged
+      this.checkActionLogger();
+    }
   }
 
   ngOnDestroy() {
-    this.subscription_1.unsubscribe();
-    this.subscription_2.unsubscribe();
+    if (this.checkStatus()) {
+      this.subscription_1.unsubscribe();
+      this.subscription_2.unsubscribe();
+    }
+  }
+
+  public deleteCookies() {
+    Cookie.delete('authtoken');
+    Cookie.delete('userId');
+    Cookie.delete('collabLeaderId');
+    Cookie.delete('projectName');
+    Cookie.delete('collabLeaderName');
   }
 
   // fucntion to check the authToken/session of the user
@@ -147,7 +156,6 @@ export class CollabHomeComponent implements OnInit, CheckUser {
 
   //function to verify user (socket connection testing)
   public verifyUserConfirmation: any = () => {
-    console.log("verify")
     this.socketService.verifyUser()
       .subscribe((data) => {
         this.disconnectedSocket = false;
@@ -158,31 +166,32 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   //dummy test function
   public connected: any = () => {
     this.socketService.connected().subscribe((data) => {
-      console.log(data)
     })
   }// end of getProjectLists  
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_1 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 5000 })
     })
   } // end of receiveRealTimeNotifications
 
   // function to receive real time friend group related notifications
   receiveGroupNotifications() {
     this.subscription_2 = this.socketService.receiveGroupNotifications().subscribe((data) => {
-      console.log("Executed")
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
       if (data.refreshProjectList === true) {
         this.getMainProjectLists();
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of receiveGroupNotifications
 
   // function to check if there are any friend actions logged
   public checkActionLogger() {
-
     let data = {
       fromId: this.userInfo.userId,
       collabLeaderId: this.collabLeaderId,
@@ -194,12 +203,24 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['/server-error', 500]);
+      }
       else if (apiResult.status === 403) {
         this.toggleUndoButton = true;
       }
       console.log(this.toggleUndoButton)
     }, (err) => {
-      this.toastr.error('Some Error Occured', '', { timeOut: 1300 })
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of checkActionLoggger
 
@@ -225,20 +246,31 @@ export class CollabHomeComponent implements OnInit, CheckUser {
         if (apiResult.data.projects.length !== 0) {
           //this.toastr.success(apiResult.message, '', { timeOut: 7550 })
         }
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['/server-error', 500]);
+      }
+      else {
         //this.toastr.error(apiResult.message)
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured", '', { timeOut: 1550 });
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   }// end of getProjectLists  
 
   // receiving project name in modal
   mainModalFormSubmit() {
-
     this.projectValue = this.projectModalForm.controls.projectName.value;
-    this.destroysProfileModal();
-
+    this.destroyAllModal();
     let data = {
       userId: this.collabLeaderId,
       authToken: this.authToken,
@@ -284,17 +316,29 @@ export class CollabHomeComponent implements OnInit, CheckUser {
           this.toastr.error("Some Error occured")
         })
         this.checkActionLogger();
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['/server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   }// end of mainModalFormSubmit
 
   // navigate to view task component
   goToViewTaskCollab(projectNameSelected) {
-
     let data = {
       userId: this.userInfo.userId,
       mainUserId: this.collabLeaderId,
@@ -306,13 +350,33 @@ export class CollabHomeComponent implements OnInit, CheckUser {
         Cookie.set('projectName', projectNameSelected)
         this.router.navigate(['/collab-view-task', this.collabLeaderId, projectNameSelected])
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['/server-error', 500]);
+      }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1650 })
       }
     }, (err) => {
-      this.toastr.error("Some error occured", '', { timeOut: 3650 })
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   }// end of goToViewTask
+
+  // function to navigate to main-home and delete cookies
+  navigateToMainHomeComponent() {
+    Cookie.delete('projectName');
+    Cookie.delete('collabLeaderName');
+    Cookie.delete('collabLeaderId');
+    this.router.navigate(['/main-home'])
+  } // end of navigateToMainHomeComponent
 
   // function to perform the undo opertation based on the type of action retrieved
   public performUndoOperation() {
@@ -325,7 +389,6 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
         this.undoObject = apiResult.data
-        console.log(this.undoObject)
         if (this.undoObject['type'] === "Project Added") {
           let projectData = {
             authToken: this.authToken,
@@ -337,7 +400,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 if (apiResult.status === 200) {
@@ -351,6 +414,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -360,28 +433,57 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+
               })
               this.getMainProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['/server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
-
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName}, are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
           })
         }
@@ -397,7 +499,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 console.log("Action Deleted")
@@ -412,6 +514,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies();
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -421,29 +533,59 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getMainProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['/server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
 
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Edited") {
@@ -461,7 +603,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 if (apiResult.status === 200) {
@@ -475,6 +617,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -484,6 +636,10 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getMainProjectLists();
               this.checkActionLogger();
@@ -492,20 +648,36 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Completed") {
@@ -522,7 +694,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 if (apiResult.status === 200) {
@@ -536,6 +708,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -545,28 +727,58 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getMainProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['/server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Sub-Task Added") {
@@ -583,7 +795,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 if (apiResult.status === 200) {
@@ -597,6 +809,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -606,28 +828,58 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getMainProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['/server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Deleted") {
@@ -652,7 +904,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                   let data2 = {
                     authToken: this.authToken,
                     fromId: this.userInfo.userId,
-                    collabLeaderId: this.collabLeaderId
+                    collabLeaderId: this.userInfo.userId
                   }
                   this.actionService.deleteAction(data2).subscribe((apiResult) => {
                     if (apiResult.status === 200) {
@@ -666,6 +918,16 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                       }
                       this.socketService.sendGroupEditsNotification(notificationObject);
                     }
+                    else if (apiResult.status === 404) {
+                      apiResult.message = "Authentication Token is either invalid or expired!"
+                      this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                      this.deleteCookies()
+                      this.router.navigate(['not-found']);
+                    }
+                    else if (apiResult.status === 500) {
+                      this.deleteCookies();
+                      this.router.navigate(['/server-error', 500]);
+                    }
                     else {
                       if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                         this.toggleUndoButton = true;
@@ -675,37 +937,95 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                       }
                       this.toastr.error('Undo failed', '', { timeOut: 4000 })
                     }
+                  }, (err) => {
+                    this.deleteCookies();
+                    this.router.navigate(['/server-error', 500]);
+                    this.toastr.error('Some error occured', '', { timeOut: 2000 });
                   })
                   this.getMainProjectLists();
                   this.checkActionLogger();
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['/server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.collabLeaderId
+                collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data3).subscribe((apiResult) => {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['/server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['/server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['/server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['/server-error', 500]);
+      }
       else if (apiResult.status === 403) {
-        this.toastr.error(`No actions of ${this.collabLeaderName}'s friend(s) is left to revert!`, '', { timeOut: 4000 })
+        this.toastr.error(`No actions of ${this.userInfo.firstName} ${this.userInfo.lastName}'s friend(s) is left to revert!`, '', { timeOut: 4000 })
         this.toggleUndoButton = true;
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['/server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of performUndoOperation
 
@@ -717,14 +1037,13 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     }
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        Cookie.delete('authtoken');
-        Cookie.delete('userId');
-        Cookie.delete('collabLeaderId');
+        this.deleteCookies();
         this.router.navigate(['/']);
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
       else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.router.navigate(['/home'])
       }
     })
   }// end of logoutUser
@@ -762,11 +1081,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   closeNav_2() {
     closeNavigationBarv2();
   }
-  destroysProfileModal() {
-    destroyModal();
-  }
   destroyAllModal() {
     destroyModal();
   }
-
 }

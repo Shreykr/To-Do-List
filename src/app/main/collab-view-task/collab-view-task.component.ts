@@ -95,7 +95,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
   constructor(
     public _route: ActivatedRoute,
     public router: Router,
-    private location: Location,
     public appService: AppService,
     public mainService: MainService,
     public actionService: ActionService,
@@ -107,7 +106,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
   ngOnInit(): void {
 
     // logic for implementing different sidebars depend on screen size.
-    if (this.scrWidth <= 750) {
+    if (this.scrWidth <= 890) {
       this.toggle_2 = 1;
       this.flag = 1;
     }
@@ -122,29 +121,31 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     this.collabLeaderId = this._route.snapshot.paramMap.get('toId');
 
     // checking the user
-    this.checkStatus();
+    if (this.checkStatus()) {
+      //testing socket connection
+      this.verifyUserConfirmation();
 
-    //testing socket connection
-    this.verifyUserConfirmation();
+      //dummy test function
+      this.connected();
 
-    //dummy test function
-    this.connected();
+      // receiving real time notifications to subscribed socket events
+      this.receiveRealTimeNotifications();
 
-    // receiving real time notifications to subscribed socket events
-    this.receiveRealTimeNotifications();
+      this.receiveGroupNotifications();
 
-    this.receiveGroupNotifications();
+      // getting all the task lists
+      this.getMainItemList();
 
-    // getting all the task lists
-    this.getMainItemList();
-
-    //check if there are any friend actions logged
-    this.checkActionLogger();
+      //check if there are any friend actions logged
+      this.checkActionLogger();
+    }
   }
 
   ngOnDestroy() {
-    this.subscription_1.unsubscribe();
-    this.subscription_2.unsubscribe();
+    if (this.checkStatus()) {
+      this.subscription_1.unsubscribe();
+      this.subscription_2.unsubscribe();
+    }
   }
 
   public checkStatus: any = () => {
@@ -156,9 +157,16 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     }
   } //end of check status
 
+  public deleteCookies() {
+    Cookie.delete('authtoken');
+    Cookie.delete('userId');
+    Cookie.delete('collabLeaderId');
+    Cookie.delete('projectName');
+    Cookie.delete('collabLeaderName');
+  }
+
   //function to verify user (socket connection testing)
   public verifyUserConfirmation: any = () => {
-    console.log("verify")
     this.socketService.verifyUser()
       .subscribe((data) => {
         this.disconnectedSocket = false;
@@ -189,14 +197,22 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     })
   } // end of receiveGroupNotifications
 
-  // function to route to previous route
-  public goToMainHome() {
-    this.location.back();
-  } // end of goToCollabHome
+  // function to navigate to collab home page and delete projectName cookie
+  navigateToCollabHomeComponent() {
+    Cookie.delete('projectName');
+    this.router.navigate(['/collab-home', this.collabLeaderId])
+  } // end of navigateToCollabHomeComponent
+
+  // function to navigate to main-home and delete cookies
+  navigateToMainHomeComponent() {
+    Cookie.delete('projectName');
+    Cookie.delete('collabLeaderId');
+    Cookie.delete('collabLeaderName');
+    this.router.navigate(['/main-home'])
+  } // end of navigateToMainHomeComponent
 
   // function to check if there are any friend actions logged
   public checkActionLogger() {
-
     let data = {
       fromId: this.userInfo.userId,
       collabLeaderId: this.collabLeaderId,
@@ -208,12 +224,23 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
       else if (apiResult.status === 403) {
         this.toggleUndoButton = true;
       }
-      console.log(this.toggleUndoButton)
     }, (err) => {
-      this.toastr.error('Some Error Occured', '', { timeOut: 1300 })
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of checkActionLoggger
 
@@ -266,17 +293,29 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           }
         }
         //this.toastr.success("Tasks Updated", '', { timeOut: 1250 })
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of getMainItemList
 
   // receiving task name in modal.
   itemModalFormSubmit() {
-
     this.itemName = this.itemModalForm.controls.itemName.value;
     this.destroysItemModal();
     let data = {
@@ -297,7 +336,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           }
         }
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
-
         let notificationObject = {
           fromId: this.userInfo.userId,
           toId: this.collabLeaderId,
@@ -306,9 +344,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           fullName: this.collabLeaderName,
           refreshItemList: true
         };
-
         this.socketService.sendGroupEditsNotification(notificationObject);
-
         let action = {
           type: "Task Added",
           fromId: this.userInfo.userId,
@@ -327,18 +363,43 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
           }
         }, (err) => {
-          this.toastr.error("Some Error occured")
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2000 });
         })
         this.checkActionLogger();
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1550 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of itemModalFormSubmit
 
@@ -388,16 +449,26 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
           }
         }, (err) => {
-          this.toastr.error("Some Error occured")
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2000 });
         })
-
         this.subItemsList.splice(0, this.subItemsList.length);
         delete this.subTaskMapping[this.itemName];
-
         let notificationObject = {
           fromId: this.userInfo.userId,
           toId: this.collabLeaderId,
@@ -409,11 +480,24 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
         this.socketService.sendGroupEditsNotification(notificationObject);
         this.updateSubItemsInDom();
         this.checkActionLogger();
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of subItemModalFormSubmit
 
@@ -443,11 +527,24 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of updateSubItemsInDom
 
@@ -499,25 +596,49 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
+
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
           }
         }, (err) => {
-          this.toastr.error("Some Error occured")
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2000 });
         })
         this.checkActionLogger();
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1450 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of markedAsDone
 
   // function to execute to edit the item name
   editItemModalFormSubmit() {
-
     if (this.subTaskMapping[this.itemName] !== undefined) {
       for (let i of this.subTaskMapping[this.itemName]) {
         this.subItemsList.push(i)
@@ -536,7 +657,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     }
     this.mainService.editItemList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-
         let action = {
           type: "Task Edited",
           fromId: this.userInfo.userId,
@@ -555,13 +675,24 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
           }
         }, (err) => {
-          this.toastr.error("Some Error occured")
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2000 });
         })
-
         for (let i in apiResult.data.projects) {
           for (let j in apiResult.data.projects[i].items) {
             if (apiResult.data.projects[i].name === this.projectName && apiResult.data.projects[i].items[j].itemName === newItemName) {
@@ -575,7 +706,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                 }
                 delete this.statusMapping[this.itemName];
                 this.statusMapping[apiResult.data.projects[i].items[j].itemName] = apiResult.data.projects[i].items[j].completed
-
                 for (let i in this.itemNamesList) {
                   console.log(this.itemName)
                   console.log(this.itemNamesList)
@@ -602,11 +732,24 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
         }
         this.socketService.sendGroupEditsNotification(notificationObject);
         this.checkActionLogger();
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some Error Occured");
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of editItemModalFormSubmit
 
@@ -670,19 +813,43 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           if (apiResult.status === 200) {
             //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 1550 })
           }
         }, (err) => {
-          this.toastr.error("Some Error occured")
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2000 });
         })
         this.checkActionLogger();
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some error occured", '', { timeOut: 1250 })
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of deleteTask
 
@@ -1089,22 +1256,16 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     }
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        Cookie.delete('authtoken');
-        Cookie.delete('userId');
-        Cookie.delete('collabLeaderId');
-        Cookie.delete('projectName')
-        Cookie.delete('collabLeaderName')
-        this.router.navigate(['/']);
-        setTimeout(() => {
-          this.toastr.success(apiResult.message, '', { timeOut: 3550 })
-        }, 2000);
+        this.deleteCookies();
+        this.toastr.success(apiResult.message, '', { timeOut: 3550 })
       }
       else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.deleteCookies();
+        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.router.navigate(['/home'])
       }
     })
   }
-
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();

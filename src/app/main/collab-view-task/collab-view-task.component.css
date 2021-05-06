@@ -78,13 +78,14 @@
     background: rgb(90, 97, 105); 
 }
 
-.notifications{
-    display: flex;
-    flex-direction: row;
+.disconnect{
     width:fit-content;
 }
-.notifications-button{    
+
+.disconnect-button{
+    background-color: rgb(9, 173, 146);
     width:140px;
+    color:white;
 }
 
 .active-dot{
@@ -209,7 +210,7 @@
     }   
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 890px) {
     #main-content{
         margin-left:10px;
     }

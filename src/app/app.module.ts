@@ -8,6 +8,7 @@ import { MainHomeComponent } from './main/main-home/main-home.component';
 import { ViewTaskComponent } from './main/view-task/view-task.component';
 import { CollabHomeComponent } from './main/collab-home/collab-home.component';
 import { CollabViewTaskComponent } from './main/collab-view-task/collab-view-task.component';
+import { ErrorComponent } from './general/error/error.component'
 
 //Modules
 import { NgModule } from '@angular/core';
@@ -35,7 +36,8 @@ import { InterceptorService } from './interceptor.service';
     MainHomeComponent,
     ViewTaskComponent,
     CollabHomeComponent,
-    CollabViewTaskComponent
+    CollabViewTaskComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,
@@ -53,9 +55,11 @@ import { InterceptorService } from './interceptor.service';
       { path: 'collab-home/:toId', component: CollabHomeComponent },
       { path: 'collab-view-task/:toId/:projectName', component: CollabViewTaskComponent },
       { path: 'password-recovery/:authToken/:userId', component: PasswordRecoveryComponent },
+      { path: 'not-found', component: ErrorComponent },
+      { path: 'server-error/:error', component: ErrorComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: '*', component: HomeComponent },
-      { path: '**', component: HomeComponent }
+      { path: '*', component: ErrorComponent },
+      { path: '**', component: ErrorComponent }
     ])
   ],
   providers: [AppService, MainService, SocketService, ActionService, LoaderService, { provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true }],

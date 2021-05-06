@@ -8,6 +8,10 @@
     height:auto;
 }
 
+a{
+  text-decoration: none;
+}
+
 .main>ul>li>a{
   color: rgb(219, 216, 216);
 }
@@ -15,27 +19,86 @@
 .main>ul>li>a:hover{
   color: white;
 }
-  
-  @media screen and (min-width: 1020px)and (max-width:1040px) {
-    .home-text{
-      font-size:3.75rem;
-    }
-    .main-button{
-      font-size: 2.5rem;
-    }
+
+@media screen and (min-width: 230px)and (max-width:415px) and (max-height:540px) {
+  .home-text{
+    margin-top:1.5px;
+    font-size:1rem;
   }
-  
-  @media screen and (min-width: 270px)and (max-width:415px) {
-    .home-text{
-      font-size:1.75rem;
-    }
+  .main-button{
+    font-size: 0.75rem;
   }
-  
-  @media screen and (min-width: 750px)and (max-width:850px) {
-    .home-text{
-      font-size:2.75rem;
-    }
-    .main-button{
-      font-size: 2.0rem;
-    }
+  .login-text{
+    font-size: 0.5rem;
   }
+}
+
+@media screen and (min-width: 319px)and (max-width:358px) and (max-height:627px) {
+  .home-text{
+    margin-top:3.5px;
+    font-size:1.25rem;
+  }
+  .main-button{
+    font-size: 0.95rem;
+  }
+  .login-text{
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (min-width: 359px) and (max-width:412px) and (min-height:626px) {
+  .home-text{
+    margin-top:2.5px;
+    font-size:1.25rem;
+  }
+  .main-button{
+    font-size: 0.95rem;
+  }
+  .login-text{
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (min-width: 413px) and (max-width:730px) and (min-height:626px) {
+  .home-text{
+    margin-top:2.5px;
+    font-size:1.50rem;
+  }
+  .main-button{
+    font-size: 0.95rem;
+  }
+  .login-text{
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (min-width: 750px)and (max-width:850px) {
+  .home-text{
+    font-size:2.75rem;
+  }
+  .login-text{
+    font-size: 1.25rem;
+  }
+  .main-button{
+    font-size: 1.75rem;
+  }  
+  .home-image{
+    margin-top:20px;
+  }
+}
+  
+@media screen and (min-width: 1020px)and (max-width:1040px) {
+  .home-text{
+    font-size:3.75rem;
+  }
+  .main-button{
+    font-size: 2.5rem;
+  }
+  .login-text{
+    font-size: 2.25rem;
+  }
+}
+
+
+  
+ 

@@ -15,6 +15,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  //function to navigate to signup route
   public navigateToSignUp: any = () => {
     this.router.navigate(['/signup']);
   }

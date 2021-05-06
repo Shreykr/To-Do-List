@@ -65,11 +65,11 @@
     }
 }
 
-.search{
+.disconnect{
     width:fit-content;
 }
 
-.search-button{
+.disconnect-button{
     background-color: rgb(9, 173, 146);
     width:140px;
     color:white;

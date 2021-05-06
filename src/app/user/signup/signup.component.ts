@@ -14,7 +14,6 @@ export class SignupComponent implements OnInit {
 
   // Creation of form group
   profileSignupForm = new FormGroup({
-
     userFirstName: new FormControl(null, [Validators.required, Validators.pattern("([a-zA-Z]{2,30}\s*)+")]),
     userLastName: new FormControl(null, [Validators.pattern("([a-zA-Z]{1,30}\s*)+")]),
     userMobileNumber: new FormControl(null, [Validators.required, Validators.pattern("^[1-9][0-9]{5,15}$")]),
@@ -33,7 +32,7 @@ export class SignupComponent implements OnInit {
   public percentageValue: any = 0;
   public resultPercentage: String = "0%";
 
-  // To track which inputs the progress bar updated for. 
+  // To track which inputs the progress bar is updated for. 
   // Takes values 1 or 0.
   public updateObj = {
     firstName: 0,
@@ -52,7 +51,6 @@ export class SignupComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    //this.profileSignupForm.controls.userConfirmPassword.disable()
   }
 
   /* Compares passwords */
@@ -63,16 +61,10 @@ export class SignupComponent implements OnInit {
     else {
       this.result = false;
     }
-    // if (this.profileSignupForm.controls.userPassword.valid) {
-    //   this.profileSignupForm.controls.userConfirmPassword.enable()
-    // }
-    // else {
-    //   this.profileSignupForm.controls.userConfirmPassword.disable()
-    // }
-  }
+  } // end of verify
 
+  // function to update progress bar
   public updateProgressBar = () => {
-
     if ((this.profileSignupForm.controls.userFirstName.dirty && this.profileSignupForm.controls.userFirstName.valid) && (this.updateObj.firstName !== 1)) {
       this.percentageValue += 16.6666667;
       this.updateObj['firstName'] = 1;
@@ -133,16 +125,15 @@ export class SignupComponent implements OnInit {
 
     this.resultPercentage = this.percentageValue + "%"
 
-  } //end of updateProgressBar logic
+  } // end of updateProgressBar
 
-
+  //fucntion to navigate to login page
   public goToLogin = (): any => {
     this.router.navigate(['/login'])
-  }
+  } // end of goToLogin
 
-  /* Sending the data so as to sign up */
+  // function to signup
   signUpFunction(f) {
-    // TODO: Use EventEmitter with form value
     let data = {
       firstName: f.controls.userFirstName.value,
       lastName: f.controls.userLastName.value,
@@ -154,22 +145,22 @@ export class SignupComponent implements OnInit {
     if (data.lastName === null || data.lastName === undefined) {
       data.lastName = '';
     }
-
     this.appService.signupFunction(data).subscribe((apiResult) => {
-
-      //console.log(`Response from backend: ${apiResult}`);
-
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message);
+        //this.toastr.success(apiResult.message);
         setTimeout(() => {
           this.goToLogin();
         }, 2000);
-      } else {
+      }
+      else if (apiResult.status === 500) {
+        this.router.navigate(['server-error', 500])
+      }
+      else {
         this.toastr.error(apiResult.message)
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
+      this.router.navigate(['server-error', 500])
     })
-  }
-
+  } // end of signUpFunction
 }

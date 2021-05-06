@@ -107,36 +107,49 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
 
     // checking the user
-    this.checkStatus();
+    if (this.checkStatus()) {
+      //testing socket connection
+      this.verifyUserConfirmation();
 
-    //testing socket connection
-    this.verifyUserConfirmation();
+      //dummy test function
+      this.connected();
 
-    //dummy test function
-    this.connected();
+      // receiving real time notifications to subscribed socket events
+      this.receiveRealTimeNotifications();
 
-    // receiving real time notifications to subscribed socket events
-    this.receiveRealTimeNotifications();
+      // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
+      this.receiveGroupNotifications();
 
-    // receiving real time notifications of friend viewing your tasks. All friends will be notified of this activity.
-    this.receiveGroupNotifications();
+      // getting all the project lists
+      this.getProjectLists()
 
-    // getting all the project lists
-    this.getProjectLists()
+      //check if there are any friend actions logged
+      this.checkActionLogger();
+    }
 
-    //check if there are any friend actions logged
-    this.checkActionLogger();
   }
 
   ngOnDestroy() {
-    this.subscription_1.unsubscribe();
-    this.subscription_2.unsubscribe();
+    if (this.checkStatus()) {
+      this.subscription_1.unsubscribe();
+      this.subscription_2.unsubscribe();
+    }
+  }
+
+  public deleteCookies() {
+    Cookie.delete('authtoken');
+    Cookie.delete('userId');
+    Cookie.delete('collabLeaderId');
+    Cookie.delete('projectName');
+    Cookie.delete('collabLeaderName');
   }
 
   // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
-      this.router.navigate(['/']);
+      this.toastr.error('Invalid/missing auth token. Login again')
+      this.deleteCookies();
+      this.router.navigate(['/not-found']);
       return false;
     } else {
       return true;
@@ -145,24 +158,22 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
 
   //function to verify user (socket connection testing)
   public verifyUserConfirmation: any = () => {
-    console.log("verify")
     this.socketService.verifyUser()
       .subscribe((data) => {
         this.disconnectedSocket = false;
         this.socketService.setUser(this.authToken);
       });
-  }// end of verifyUserConfirmation
+  } // end of verifyUserConfirmation
 
   //dummy test function
   public connected: any = () => {
     this.socketService.connected().subscribe((data) => {
-      console.log(data)
     })
   }// end of getProjectLists
 
   //fucntion to send friend request notification to the recipient
   sendFriendRequest(toId) {
-    this.destroysSearchModal();
+    this.destroyAllModal();
     //constructing the notification object
     let notificationObject = {
       fromId: this.userInfo.userId,
@@ -177,14 +188,42 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
           if (apiResult.status === 200) {
             this.socketService.sendRequestNotification(notificationObject);
           }
-          else {
-            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message);
+            this.deleteCookies()
+            this.router.navigate(['not-found']);
           }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 2250 });
+          }
+        }, (err) => {
+          this.deleteCookies();
+          this.router.navigate(['server-error', 500]);
+          this.toastr.error('Some error occured', '', { timeOut: 2250 })
         })
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message);
+        this.deleteCookies();
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 2250 })
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2250 })
     })
   } // end of sendFriendRequest
 
@@ -230,20 +269,31 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
           }
         }
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message);
+        this.deleteCookies();
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
       else {
         this.notificationModalFlag = false;
-        console.log(this.notificationModalFlag)
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      this.toastr.error("Some error occured", '', { timeOut: 1250 })
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error("Some error occured", '', { timeOut: 2000 })
     })
   } // end of getAllNotifications
 
   // function to add friend and send the notification to the added friend
   addFriend(toId) {
     console.log(toId)
-    this.destroysNotifModal();
+    this.destroyAllModal();
     //constructing the notification object
     let notificationObject = {
       fromId: this.userInfo.userId,
@@ -252,7 +302,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
       authToken: this.authToken
     }
-
     this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
@@ -260,14 +309,41 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
             this.toastr.success(apiResult.message, '', { timeOut: 2250 })
             this.socketService.sendFriendAcceptNotification(notificationObject);
           }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message);
+            this.deleteCookies();
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
           else {
             this.toastr.error(apiResult.message, '', { timeOut: 2250 })
           }
+        }, (err) => {
+          this.deleteCookies();
+          this.toastr.error('Some error occured', '', { timeOut: 2250 })
         })
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message);
+        this.deleteCookies();
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 2250 })
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some Error Occured', '', { timeOut: 2000 })
     })
   }// end of addFriend
 
@@ -285,7 +361,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
           }
         }
         for (let j of this.friendsIdList) {
-          console.log(j)
           let data = {
             userId: j,
             authToken: this.authToken
@@ -305,15 +380,43 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 }
               }
             }
-          })
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
+            }
+          },
+            (err) => {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
+              this.toastr.error('Some Error occured', '', { timeOut: 2000 });
+            })
         }
         this.friendsModalFlag = true;
         //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+      }
+      else if (apiResult.status === 404) {
+        this.toastr.error(apiResult.message);
+        this.deleteCookies();
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else {
         this.friendsModalFlag = false;
         this.toastr.error(apiResult.message, '', { timeOut: 2250 })
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some Error occured', '', { timeOut: 2000 });
     })
   }// end of getAllFriendsOfUser
 
@@ -339,6 +442,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         Cookie.set('collabLeaderName', fullName)
         this.router.navigate(['/collab-home', toId])
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message);
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+      }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of connectWithFriend
 
@@ -355,12 +475,24 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
       else if (apiResult.status === 403) {
         this.toggleUndoButton = true;
       }
       console.log(this.toggleUndoButton)
     }, (err) => {
-      this.toastr.error('Some Error Occured', '', { timeOut: 1300 })
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some Error Occured', '', { timeOut: 2000 })
     })
   } // end of checkActionLoggger
 
@@ -386,10 +518,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         if (apiResult.data.projects.length !== 0) {
           this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         }
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         // this.toastr.error(apiResult.message)
       }
     }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
       this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
     })
   } // end of getProjectLists
@@ -397,8 +542,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // receiving project name in modal.
   mainModalFormSubmit() {
     this.projectValue = this.projectModalForm.controls.projectName.value;
-    this.destroysProfileModal();
-
+    this.destroyAllModal();
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken,
@@ -420,11 +564,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         };
 
         this.socketService.sendGroupEditsNotification(notificationObject);
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
-      console.log(`this`)
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
       this.toastr.error("Some Error Occured");
     })
   } // end of mainModalFormSubmit
@@ -447,10 +603,22 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         }
         //this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
       else {
         this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
       this.toastr.error('Some error occured', '', { timeOut: 1250 })
     })
   }// end of getAllUsers
@@ -466,7 +634,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
         this.undoObject = apiResult.data
-        console.log(this.undoObject)
         if (this.undoObject['type'] === "Project Added") {
           let projectData = {
             authToken: this.authToken,
@@ -492,6 +659,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -501,9 +678,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+
               })
               this.getProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
@@ -515,14 +706,29 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
-
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName}, are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
           })
         }
@@ -553,6 +759,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies();
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -562,9 +778,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
@@ -576,15 +806,31 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
 
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Edited") {
@@ -616,6 +862,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -625,6 +881,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getProjectLists();
               this.checkActionLogger();
@@ -639,14 +899,30 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Completed") {
@@ -677,6 +953,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -686,9 +972,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
@@ -700,14 +1000,30 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Sub-Task Added") {
@@ -738,6 +1054,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.socketService.sendGroupEditsNotification(notificationObject);
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                     this.toggleUndoButton = true;
@@ -747,9 +1073,23 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.getProjectLists();
               this.checkActionLogger();
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
@@ -761,14 +1101,30 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
         else if (this.undoObject['type'] === "Task Deleted") {
@@ -807,6 +1163,16 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                       }
                       this.socketService.sendGroupEditsNotification(notificationObject);
                     }
+                    else if (apiResult.status === 404) {
+                      apiResult.message = "Authentication Token is either invalid or expired!"
+                      this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                      this.deleteCookies()
+                      this.router.navigate(['not-found']);
+                    }
+                    else if (apiResult.status === 500) {
+                      this.deleteCookies();
+                      this.router.navigate(['server-error', 500]);
+                    }
                     else {
                       if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                         this.toggleUndoButton = true;
@@ -816,11 +1182,39 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                       }
                       this.toastr.error('Undo failed', '', { timeOut: 4000 })
                     }
+                  }, (err) => {
+                    this.deleteCookies();
+                    this.router.navigate(['server-error', 500]);
+                    this.toastr.error('Some error occured', '', { timeOut: 2000 });
                   })
                   this.getProjectLists();
                   this.checkActionLogger();
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
+            }
+            else if (apiResult.status === 404) {
+              apiResult.message = "Authentication Token is either invalid or expired!"
+              this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+              this.deleteCookies()
+              this.router.navigate(['not-found']);
+            }
+            else if (apiResult.status === 500) {
+              this.deleteCookies();
+              this.router.navigate(['server-error', 500]);
             }
             else if (apiResult.status === 403) {
               let data3 = {
@@ -832,21 +1226,51 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 if (apiResult.status === 403 && apiResult.message === "No Action Found") {
                   this.toggleUndoButton = true;
                 }
+                else if (apiResult.status === 404) {
+                  apiResult.message = "Authentication Token is either invalid or expired!"
+                  this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+                  this.deleteCookies()
+                  this.router.navigate(['not-found']);
+                }
+                else if (apiResult.status === 500) {
+                  this.deleteCookies();
+                  this.router.navigate(['server-error', 500]);
+                }
                 else {
                   this.toggleUndoButton = false
                 }
+              }, (err) => {
+                this.deleteCookies();
+                this.router.navigate(['server-error', 500]);
+                this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
               this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
             }
           }, (err) => {
-            this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+            this.toastr.error('Some error occured', '', { timeOut: 2000 });
           })
         }
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
       }
       else if (apiResult.status === 403) {
         this.toastr.error(`No actions of ${this.userInfo.firstName} ${this.userInfo.lastName}'s friend(s) is left to revert!`, '', { timeOut: 4000 })
         this.toggleUndoButton = true;
       }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of performUndoOperation
 
@@ -858,15 +1282,29 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     }
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        Cookie.delete('authtoken');
-        Cookie.delete('userId');
-        Cookie.delete('collabLeaderId');
+        this.deleteCookies();
         this.router.navigate(['/']);
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
       }
-      else {
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
       }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
+        this.deleteCookies();
+        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.router.navigate(['/home']);
+      }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   }  // end of logoutUser
 
@@ -890,7 +1328,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       this.toggle_2 = 1;
     }
   } // end of toggleNav
-
   openNav_1() {
     openNavgationBarv1();
   }
@@ -903,16 +1340,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   closeNav_2() {
     closeNavigationBarv2();
   }
-  destroysProfileModal() {
-    destroyModal();
-  }
-  destroysSearchModal() {
-    destroyModal();
-  }
-  destroysNotifModal() {
-    destroyModal();
-  }
-  destroyFriendModal() {
+  destroyAllModal() {
     destroyModal();
   }
 }

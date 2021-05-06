@@ -32,6 +32,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  //function to send the recovery mail
   sendRecoveryMail() {
     let data = {
       email: this.profileLoginForm.controls.userLoginMail.value.toLowerCase()
@@ -47,7 +48,7 @@ export class LoginComponent implements OnInit {
 
       this.toastr.error("Some Error Occured");
     })
-  }
+  } // end of sendRecoveryMail
 
   /* Sending the data so as to sign up */
   signUpFunction(f) {
@@ -55,23 +56,27 @@ export class LoginComponent implements OnInit {
       email: f.controls.userLoginMail.value.toLowerCase(),
       password: f.controls.userLoginPassword.value
     }
-
     this.appService.loginFunction(data).subscribe((apiResult) => {
-
-      //console.log(`Response from backend: ${apiResult}`);
-
       if (apiResult.status === 200) {
         //this.toastr.success(apiResult.message);
         Cookie.set('authtoken', apiResult.data.authToken);
         Cookie.set('userId', apiResult.data.userDetails.userId);
         this.appService.setUserInfoInLocalStorage(apiResult.data.userDetails)
         this.router.navigate(['/main-home']);
-      } else {
+      }
+      else if (apiResult.status === 404) {
+        this.toastr.error(apiResult.message);
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.router.navigate(['server-error', 500])
+      }
+      else {
         this.toastr.error(apiResult.message)
       }
     }, (err) => {
       this.toastr.error("Some Error Occured");
+      this.router.navigate(['server-error', 500])
     })
   }
-
 }
