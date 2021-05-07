@@ -17,7 +17,7 @@ export class PasswordRecoveryComponent implements OnInit {
 
   // Creation of form group
   passwordEditForm = new FormGroup({
-    newPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")])
+    newPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,30}$")])
   })
 
   constructor(
@@ -55,7 +55,9 @@ export class PasswordRecoveryComponent implements OnInit {
         this.router.navigate(['not-found']);
       }
       else if (apiResult.status === 500) {
-        this.router.navigate(['server-error', 500])
+        apiResult.message = "This link is either invalid or expired."
+        this.toastr.error(apiResult.message);
+        this.router.navigate(['not-found'])
       }
       else {
         this.toastr.error(apiResult.message)

@@ -108,11 +108,11 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
 
     // checking the user
     if (this.checkStatus()) {
+
+      this.connectToSocket();
+
       //testing socket connection
       this.verifyUserConfirmation();
-
-      //dummy test function
-      this.connected();
 
       // receiving real time notifications to subscribed socket events
       this.receiveRealTimeNotifications();
@@ -126,7 +126,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       //check if there are any friend actions logged
       this.checkActionLogger();
     }
-
   }
 
   ngOnDestroy() {
@@ -135,14 +134,14 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       this.subscription_2.unsubscribe();
     }
   }
-
+  // function to delete all cookies possibly present
   public deleteCookies() {
     Cookie.delete('authtoken');
     Cookie.delete('userId');
     Cookie.delete('collabLeaderId');
     Cookie.delete('projectName');
     Cookie.delete('collabLeaderName');
-  }
+  } // end of deleteCookies
 
   // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
@@ -156,20 +155,19 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     }
   } //end of checkStatus
 
+  public connectToSocket: any = () => {
+    this.socketService.startConnection()
+      .subscribe(() => {
+      });
+  }
   //function to verify user (socket connection testing)
   public verifyUserConfirmation: any = () => {
     this.socketService.verifyUser()
       .subscribe((data) => {
-        this.disconnectedSocket = false;
+        console.log("verified")
         this.socketService.setUser(this.authToken);
       });
   } // end of verifyUserConfirmation
-
-  //dummy test function
-  public connected: any = () => {
-    this.socketService.connected().subscribe((data) => {
-    })
-  }// end of getProjectLists
 
   //fucntion to send friend request notification to the recipient
   sendFriendRequest(toId) {
@@ -230,6 +228,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_2 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
+      console.log(data.notificationMessage)
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
     })
   } // end of receiveRealTimeNotifications
@@ -281,7 +280,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
       else {
         this.notificationModalFlag = false;
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.deleteCookies();
@@ -411,7 +410,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
       else {
         this.friendsModalFlag = false;
-        this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+        //this.toastr.error(apiResult.message, '', { timeOut: 2250 })
       }
     }, (err) => {
       this.deleteCookies();
@@ -477,7 +476,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
-        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        //this.toastr.error(apiResult.message, '', { timeOut: 2000 });
         this.deleteCookies()
         this.router.navigate(['not-found']);
       }
@@ -488,7 +487,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       else if (apiResult.status === 403) {
         this.toggleUndoButton = true;
       }
-      console.log(this.toggleUndoButton)
     }, (err) => {
       this.deleteCookies();
       this.router.navigate(['server-error', 500]);
@@ -567,7 +565,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
-        this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        //this.toastr.error(apiResult.message, '', { timeOut: 2000 });
         this.deleteCookies()
         this.router.navigate(['not-found']);
       }
@@ -591,7 +589,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   }// end of goToViewTask
 
   //function to get all the users
-  getAllUsers() {
+  public getAllUsers() {
     this.appService.getSpecificUsersDetails().subscribe((apiResult) => {
       if (apiResult.status === 200) {
         var tempList = []
@@ -1275,29 +1273,31 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   } // end of performUndoOperation
 
   // user will be logged out
-  logoutUser() {
+  public logoutUser() {
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken
-    }
+    } // end of logoutUser
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.deleteCookies();
-        this.router.navigate(['/']);
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.socketService.exitSocket();
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 });
+        this.router.navigate(['/home']);
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
         this.toastr.error(apiResult.message, '', { timeOut: 2000 });
         this.deleteCookies()
-        this.router.navigate(['not-found']);
+        this.router.navigate(['/not-found']);
       }
       else if (apiResult.status === 500) {
         this.deleteCookies();
-        this.router.navigate(['server-error', 500]);
+        this.router.navigate(['/server-error', 500]);
       }
       else {
         this.deleteCookies();
+        this.socketService.exitSocket();
         //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
         this.router.navigate(['/home']);
       }

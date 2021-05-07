@@ -62,7 +62,7 @@ import { InterceptorService } from './interceptor.service';
       { path: '**', component: ErrorComponent }
     ])
   ],
-  providers: [AppService, MainService, SocketService, ActionService, LoaderService, { provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true }],
+  providers: [SocketService, AppService, MainService, ActionService, LoaderService, { provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

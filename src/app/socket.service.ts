@@ -1,16 +1,13 @@
 import { Injectable } from '@angular/core';
-
 import io from 'socket.io-client';
-
 import { Observable } from 'rxjs';
-import { Cookie } from 'ng2-cookies/ng2-cookies'
 
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/toPromise';
 
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { HttpErrorResponse, HttpParams } from "@angular/common/http";
+import { HttpClient } from '@angular/common/http';
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Injectable()
 export class SocketService {
@@ -19,9 +16,15 @@ export class SocketService {
   private socket;
 
   constructor(public http: HttpClient) {
-    // connection is being created. that handshake
     this.socket = io(this.url);
+  }
 
+  public startConnection = () => {
+    return Observable.create((observer) => {
+      this.socket = io(this.url);
+      console.log("successful")
+      observer.next();
+    })
   }
 
   public verifyUser = () => {
@@ -32,25 +35,9 @@ export class SocketService {
     });
   }
 
-  public connected = () => {
-    return Observable.create((observer) => {
-      this.socket.on('connected', (data) => {
-        observer.next();
-      });
-    });
-  }
-
   public setUser = (authToken) => {
     this.socket.emit('set-user', authToken);
   }
-
-  // public receiveFriendRequestReply = (userObject) => {
-  //   return Observable.create((observer) => {
-  //     this.socket.on('friend-request-state', userObject => {
-  //       observer.next(userObject);
-  //     });
-  //   });
-  // }
 
   public receiveRealTimeNotifications = (userId) => {
     return Observable.create((observer) => {
@@ -85,15 +72,13 @@ export class SocketService {
     this.socket.emit('friend-edits-notification', notificationObject)
   }
 
-  // public disconnectedSocket = () => {
-  //   return Observable.create((observer) => {
-  //     this
-  //       .socket
-  //       .on("disconnect", () => {
-  //         observer.next();
-  //       });
-  //   });
-  // }     
+  public disconnectFriend = (notificationObject) => {
+    this.socket.emit('disconnectFriend', notificationObject)
+  }
+
+  public exitSocket = () => {
+    this.socket.disconnect();
+  }
 
   private handleError(err: HttpErrorResponse) {
 

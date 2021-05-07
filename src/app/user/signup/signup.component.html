@@ -78,7 +78,7 @@
                         'has-danger': ((profileSignupForm.get('userPassword').invalid && profileSignupForm.get('userPassword').dirty)||(profileSignupForm.get('userPassword').touched && profileSignupForm.get('userPassword').pristine)), 
                         'has-success': profileSignupForm.get('userPassword').valid && profileSignupForm.get('userPassword').dirty
                       }" id="passwordInput" placeholder="Enter your password" formControlName="userPassword"
-                        data-toggle="tooltip" title="Minimum 8 characters 1 number 1
+                        data-toggle="tooltip" title="Minimum 8, Maximum 30 characters, atleast 1 number, 1
                         uppercase and 1 lowercase letter" (change)="verify()" (change)="updateProgressBar()">
                 </div>
                 <div class=" form-group">

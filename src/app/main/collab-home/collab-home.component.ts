@@ -90,6 +90,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   ) { this.getScreenSize(); }
 
   ngOnInit(): void {
+
     // logic for implementing different sidebars depend on screen size.
     if (this.scrWidth <= 750) {
       this.toggle_2 = 1;
@@ -99,6 +100,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       this.flag = 0;
       this.toggle_1 = 1;
     }
+
     this.authToken = Cookie.get('authtoken');
     this.userInfo = this.appService.getUserInfoFromLocalstorage();
     this.collabLeaderName = Cookie.get('collabLeaderName');
@@ -110,9 +112,6 @@ export class CollabHomeComponent implements OnInit, CheckUser {
     if (this.checkStatus()) {
       //testing socket connection
       this.verifyUserConfirmation();
-
-      //dummy test function
-      this.connected();
 
       // receiving real time notifications to subscribed socket events
       this.receiveRealTimeNotifications();
@@ -162,12 +161,6 @@ export class CollabHomeComponent implements OnInit, CheckUser {
         this.socketService.setUser(this.authToken);
       });
   }// end of verifyUserConfirmation
-
-  //dummy test function
-  public connected: any = () => {
-    this.socketService.connected().subscribe((data) => {
-    })
-  }// end of getProjectLists  
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
@@ -372,6 +365,15 @@ export class CollabHomeComponent implements OnInit, CheckUser {
 
   // function to navigate to main-home and delete cookies
   navigateToMainHomeComponent() {
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: this.collabLeaderId,
+      type: "Friend collab",
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has disconnected from collab room!`,
+      fullName: this.collabLeaderName,
+      refreshProjectList: false
+    }
+    this.socketService.disconnectFriend(notificationObject);
     Cookie.delete('projectName');
     Cookie.delete('collabLeaderName');
     Cookie.delete('collabLeaderId');
@@ -400,7 +402,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
               let data2 = {
                 authToken: this.authToken,
                 fromId: this.userInfo.userId,
-                collabLeaderId: this.userInfo.userId
+                collabLeaderId: this.collabLeaderId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
                 if (apiResult.status === 200) {
@@ -1030,18 +1032,21 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   } // end of performUndoOperation
 
   // user will be logged out
-  logoutUser() {
+  public logoutUser() {
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken
-    }
+    } // end of logoutUser
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.deleteCookies();
-        this.router.navigate(['/']);
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.socketService.exitSocket();
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 });
+        this.router.navigate(['/home']);
       }
       else {
+        this.deleteCookies();
+        this.socketService.exitSocket();
         //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
         this.router.navigate(['/home'])
       }

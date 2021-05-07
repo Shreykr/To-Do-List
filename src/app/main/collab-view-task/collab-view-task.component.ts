@@ -125,9 +125,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
       //testing socket connection
       this.verifyUserConfirmation();
 
-      //dummy test function
-      this.connected();
-
       // receiving real time notifications to subscribed socket events
       this.receiveRealTimeNotifications();
 
@@ -172,13 +169,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
         this.disconnectedSocket = false;
         this.socketService.setUser(this.authToken);
       });
-  }// end of verifyUserConfirmation
-
-  //dummy test function
-  public connected: any = () => {
-    this.socketService.connected().subscribe((data) => {
-    })
-  }// end of connected  
+  }// end of verifyUserConfirmation 
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
@@ -205,6 +196,15 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
 
   // function to navigate to main-home and delete cookies
   navigateToMainHomeComponent() {
+    let notificationObject = {
+      fromId: this.userInfo.userId,
+      toId: this.collabLeaderId,
+      type: "Friend collab",
+      notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has disconnected from collab room!`,
+      fullName: this.collabLeaderName,
+      refreshItemList: false
+    }
+    this.socketService.disconnectFriend(notificationObject);
     Cookie.delete('projectName');
     Cookie.delete('collabLeaderId');
     Cookie.delete('collabLeaderName');
@@ -1249,7 +1249,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
   } // end of performUndoOperation
 
   // user will be logged out
-  logoutUser() {
+  public logoutUser() {
     let data = {
       userId: this.userInfo.userId,
       authToken: this.authToken
@@ -1257,15 +1257,18 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.deleteCookies();
-        this.toastr.success(apiResult.message, '', { timeOut: 3550 })
+        this.toastr.success(apiResult.message, '', { timeOut: 3550 });
+        this.socketService.exitSocket();
+        this.router.navigate(['/home']);
       }
       else {
         this.deleteCookies();
+        this.socketService.exitSocket();
         //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
         this.router.navigate(['/home'])
       }
     })
-  }
+  } // end of logoutUser
   toggleNav() {
     if (this.toggle_1 === 1 && this.flag === 0) {
       this.closeNav_1();

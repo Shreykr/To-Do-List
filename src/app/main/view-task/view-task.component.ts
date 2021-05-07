@@ -82,7 +82,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   })
 
   subItemModalForm = new FormGroup({
-    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,15}$')])
+    'subItemName': new FormControl(null, [Validators.required, Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9 ]{0,20}$')])
   })
 
   editItemModalForm = new FormGroup({
@@ -118,11 +118,9 @@ export class ViewTaskComponent implements OnInit, CheckUser {
 
     // checking the user
     if (this.checkStatus()) {
+
       //testing socket connection
       this.verifyUserConfirmation();
-
-      //dummy test function
-      this.connected();
 
       // receiving real time notifications to subscribed socket events
       this.receiveRealTimeNotifications();
@@ -156,7 +154,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
     Cookie.delete('collabLeaderName');
   } //end of deleteCookies
 
-
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
       this.router.navigate(['/home']);
@@ -174,12 +171,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
         this.socketService.setUser(this.authToken);
       });
   }// end of verifyUserConfirmation
-
-  //dummy test function
-  public connected: any = () => {
-    this.socketService.connected().subscribe((data) => {
-    })
-  }// end of connected
 
   // function to receive real time notifications
   receiveRealTimeNotifications() {
@@ -1360,19 +1351,21 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   } // end of performUndoOperation
 
   // user will be logged out
-  logoutUser() {
+  public logoutUser() {
     let data = {
       userId: this.userInfo.userIdId,
       authToken: this.authToken
-    }
+    } // end of logoutUser
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.deleteCookies();
-        this.router.navigate(['/']);
-        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.socketService.exitSocket();
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 });
+        this.router.navigate(['/home']);
       }
       else {
         this.deleteCookies();
+        this.socketService.exitSocket();
         //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
         this.router.navigate(['/home'])
       }

@@ -50,8 +50,8 @@ export class LoginComponent implements OnInit {
     })
   } // end of sendRecoveryMail
 
-  /* Sending the data so as to sign up */
-  signUpFunction(f) {
+  /* Sending the data so as to login user */
+  loginFunction(f) {
     let data = {
       email: f.controls.userLoginMail.value.toLowerCase(),
       password: f.controls.userLoginPassword.value

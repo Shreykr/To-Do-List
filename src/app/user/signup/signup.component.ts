@@ -19,8 +19,8 @@ export class SignupComponent implements OnInit {
     userMobileNumber: new FormControl(null, [Validators.required, Validators.pattern("^[1-9][0-9]{5,15}$")]),
     userCountry: new FormControl(null, [Validators.required]),
     userMail: new FormControl(null, [Validators.required, Validators.pattern("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$")]),
-    userPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")]),
-    userConfirmPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")])
+    userPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,30}$")]),
+    userConfirmPassword: new FormControl(null, [Validators.required, Validators.pattern("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,30}$")])
   });
 
   // Stores result after comparing passwords
@@ -147,7 +147,7 @@ export class SignupComponent implements OnInit {
     }
     this.appService.signupFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        //this.toastr.success(apiResult.message);
+        this.toastr.success(apiResult.message, '', { timeOut: 4000 });
         setTimeout(() => {
           this.goToLogin();
         }, 2000);
