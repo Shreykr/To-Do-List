@@ -321,7 +321,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       else if (apiResult.status === 403) {
         this.toggleUndoButton = true;
       }
-      console.log(this.toggleUndoButton)
     }, (err) => {
       this.deleteCookies();
       this.router.navigate(['/server-error', 500]);
@@ -823,7 +822,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
-                console.log("Action Deleted")
                 if (apiResult.status === 200) {
                   let notificationObject = {
                     fromId: this.userInfo.userId,

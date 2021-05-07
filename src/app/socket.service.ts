@@ -22,7 +22,6 @@ export class SocketService {
   public startConnection = () => {
     return Observable.create((observer) => {
       this.socket = io(this.url);
-      console.log("successful")
       observer.next();
     })
   }
@@ -56,7 +55,6 @@ export class SocketService {
   }
 
   public sendConnectionStatusNotification = (notificationObject) => {
-    console.log(12)
     this.socket.emit('friend-connect-notification', notificationObject)
   }
 
@@ -83,21 +81,11 @@ export class SocketService {
   private handleError(err: HttpErrorResponse) {
 
     let errorMessage = '';
-
     if (err.error instanceof Error) {
-
       errorMessage = `An error occurred: ${err.error.message}`;
-
     } else {
-
       errorMessage = `Server returned code: ${err.status}, error message is: ${err.message}`;
-
     }
-
-    console.error(errorMessage);
-
     return Observable.throw(errorMessage);
-
   }
-
 }

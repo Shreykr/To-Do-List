@@ -33,15 +33,12 @@ export class PasswordRecoveryComponent implements OnInit {
   public goToLogin = (): any => {
     this.router.navigate(['/login'])
   }
-
   editUserPassword(f) {
     let data = {
       authToken: this.authToken,
       userId: this.userId,
       newPassword: f.controls.newPassword.value
     }
-    console.log(this.authToken)
-
     this.appService.editUserPassword(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.toastr.success(apiResult.message)

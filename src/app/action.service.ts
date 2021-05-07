@@ -39,7 +39,7 @@ export class ActionService {
       .set("fromId", data.fromId)
       .set("collabLeaderId", data.collabLeaderId)
       .set('authToken', data.authToken)
-    console.log(1)
+
     return this.http.post(`${this.url}/api/v1/actions/get-user-actions`, params)
   }
 

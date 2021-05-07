@@ -219,8 +219,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
       authToken: this.authToken
     }
     this.actionService.getActions(data).subscribe((apiResult) => {
-      console.log(apiResult.status)
-      console.log(apiResult.data)
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
       }
@@ -707,8 +705,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                 delete this.statusMapping[this.itemName];
                 this.statusMapping[apiResult.data.projects[i].items[j].itemName] = apiResult.data.projects[i].items[j].completed
                 for (let i in this.itemNamesList) {
-                  console.log(this.itemName)
-                  console.log(this.itemNamesList)
                   if (this.itemNamesList[i] === this.itemName) {
                     this.itemNamesList[i] = newItemName;
                   }
@@ -864,7 +860,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
         this.undoObject = apiResult.data
-        console.log(this.undoObject)
         if (this.undoObject['type'] === "Project Added") {
           let projectData = {
             authToken: this.authToken,
@@ -939,7 +934,6 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                 collabLeaderId: this.collabLeaderId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
-                console.log("Action Deleted")
                 if (apiResult.status === 200) {
                   let notificationObject = {
                     fromId: this.userInfo.userId,

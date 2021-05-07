@@ -164,7 +164,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public verifyUserConfirmation: any = () => {
     this.socketService.verifyUser()
       .subscribe((data) => {
-        console.log("verified")
         this.socketService.setUser(this.authToken);
       });
   } // end of verifyUserConfirmation
@@ -228,7 +227,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_2 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      console.log(data.notificationMessage)
       this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
     })
   } // end of receiveRealTimeNotifications
@@ -291,7 +289,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
 
   // function to add friend and send the notification to the added friend
   addFriend(toId) {
-    console.log(toId)
     this.destroyAllModal();
     //constructing the notification object
     let notificationObject = {
@@ -469,8 +466,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       authToken: this.authToken
     }
     this.actionService.getActions(data).subscribe((apiResult) => {
-      console.log(apiResult.status)
-      console.log(apiResult.data)
       if (apiResult.status === 200) {
         this.toggleUndoButton = false;
       }
@@ -551,7 +546,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         this.toggleMainMessage = 1;
         this.toastr.success(apiResult.message, '', { timeOut: 1250 })
         this.projectNamesList.push(this.projectValue)
-        console.log("Executed Once")
         let notificationObject = {
           fromId: this.userInfo.userId,
           toId: this.userInfo.userId,
@@ -745,7 +739,6 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 collabLeaderId: this.userInfo.userId
               }
               this.actionService.deleteAction(data2).subscribe((apiResult) => {
-                console.log("Action Deleted")
                 if (apiResult.status === 200) {
                   let notificationObject = {
                     fromId: this.userInfo.userId,

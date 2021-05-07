@@ -115,12 +115,10 @@ export class SignupComponent implements OnInit {
     if ((this.profileSignupForm.controls.userConfirmPassword.dirty && this.profileSignupForm.controls.userConfirmPassword.valid) && (this.updateObj.confirmPassword !== 1) && this.result) {
       this.percentageValue += 16.6666667;
       this.updateObj['confirmPassword'] = 1;
-      console.log(9);
     }
     else if (((this.updateObj.confirmPassword == 1) && (this.profileSignupForm.controls.userConfirmPassword.invalid)) || ((this.updateObj.confirmPassword == 1) && (this.profileSignupForm.controls.userPassword.dirty || this.profileSignupForm.controls.userConfirmPassword.dirty) && !this.result)) {
       this.updateObj['confirmPassword'] = 0;
       this.percentageValue -= 16.6666667;
-      console.log(10)
     }
 
     this.resultPercentage = this.percentageValue + "%"

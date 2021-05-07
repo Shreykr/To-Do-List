@@ -80,7 +80,7 @@ export class MainService {
     params = params.set('itemName', data.itemName)
     params = params.set('status', data.status)
     for (let i of data.subItemsList) {
-      console.log(i)
+
       params = params.append('subItems', i)
     }
     return this.http.post(`${this.url}/api/v1/main/status-update`, params)
@@ -95,7 +95,7 @@ export class MainService {
     params = params.set('newItemName', data.newItemName)
     params = params.set('status', data.status)
     for (let i of data.subItemsList) {
-      console.log(i)
+
       params = params.append('subItems', i)
     }
     return this.http.post(`${this.url}/api/v1/main/edit-item`, params)
