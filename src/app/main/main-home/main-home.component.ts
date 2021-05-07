@@ -38,6 +38,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public toggle_1: any = 0;
   public toggle_2: any = 0;
   public flag = 0;
+  public errorFlag = 0;
   public projectValue: any;
   public authToken: any;
   public userInfo: any;
@@ -146,10 +147,13 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
-      this.toastr.error('Invalid/missing auth token. Login again')
-      this.deleteCookies();
-      this.router.navigate(['/not-found']);
-      return false;
+      if (this.errorFlag === 0) {
+        this.toastr.error('Invalid/missing auth token. Login again');
+        this.errorFlag = 1;
+        this.deleteCookies();
+        this.router.navigate(['/not-found']);
+        return false;
+      }
     } else {
       return true;
     }

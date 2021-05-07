@@ -50,6 +50,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   public userMapping: any = {};
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
+  public errorFlag = 0;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -145,9 +146,13 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   // fucntion to check the authToken/session of the user
   public checkStatus: any = () => {
     if (this.authToken === undefined || this.authToken === '' || this.authToken === null) {
-      if (Cookie.get('collabLeaderId') === this.collabLeaderId)
-        this.router.navigate(['/']);
-      return false;
+      if (this.errorFlag === 0) {
+        this.toastr.error('Invalid/missing auth token. Login again');
+        this.errorFlag = 1;
+        this.deleteCookies();
+        this.router.navigate(['/not-found']);
+        return false;
+      }
     } else {
       return true;
     }
