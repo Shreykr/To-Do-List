@@ -12,7 +12,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 @Injectable()
 export class SocketService {
 
-  private url = 'http://localhost:3000';
+  private url = 'api.to-do-list.live';
   private socket;
 
   constructor(public http: HttpClient) {
