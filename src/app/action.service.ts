@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class ActionService {
 
-  private url = "http://localhost:3000"
+  private url = "http://api.to-do-list.live";
 
   constructor(public http: HttpClient) { }
 

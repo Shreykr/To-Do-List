@@ -14,7 +14,7 @@ import 'rxjs/add/operator/toPromise';
 })
 export class AppService {
 
-  private url = 'http://api.to-do-list.live'
+  private url = 'http://api.to-do-list.live';
 
   constructor(
     public http: HttpClient
@@ -67,9 +67,12 @@ export class AppService {
     return this.http.post(`${this.url}/api/v1/users/send-mail`, params);
   } // end of sendMail
 
-  public getSpecificUsersDetails(): Observable<any> {
-    return this.http.get(`${this.url}/api/v1/users/view/all-users`);
-  } // end of sendMail
+  public getSpecificUsersDetails(data): Observable<any> {
+    const params = new HttpParams()
+      .set('authToken', data.authToken);
+
+    return this.http.post(`${this.url}/api/v1/users/view/all-users`, params);
+  } // end of getSpecificUsersDetails
 
   public getUserName(data): Observable<any> {
     const params = new HttpParams()

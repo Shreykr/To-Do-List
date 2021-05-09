@@ -55,6 +55,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
   public errorFlag = 0;
+  public spinner = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -342,6 +343,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       authToken: this.authToken
     }
     this.mainService.getItemList(data).subscribe((apiResult) => {
+      this.spinner = false;
       if (apiResult.status === 200) {
         this.itemNamesList.splice(0, this.itemNamesList.length);
         this.subItemsList.splice(0, this.subItemsList.length);
@@ -485,7 +487,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
         }
         this.socketService.sendGroupEditsNotification(notificationObject);
         this.getItemList();
-        //this.updateSubItemsInDom();
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
@@ -505,44 +506,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       this.router.navigate(['/server-error', 500]);
       this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
-  } // end of subItemModalFormSubmit
-
-  // function to execute when sub items are to be updated on DOM
-  // Unused as of now. Replaced with a single function call
-  updateSubItemsInDom() {
-    //   let data = {
-    //     userId: this.userInfo.userId,
-    //     authToken: this.authToken
-    //   }
-    //   this.mainService.getItemList(data).subscribe((apiResult) => {
-    //     if (apiResult.status === 200) {
-    //       for (let i in apiResult.data.projects) {
-    //         for (let j in apiResult.data.projects[i].items) {
-    //           if (apiResult.data.projects[i].name === this.projectName && apiResult.data.projects[i].items[j].itemName === this.itemName) {
-    //             if (apiResult.data.projects[i].items[j].length === 0) {
-    //               break;
-    //             }
-    //             else {
-    //               if (apiResult.data.projects[i].items[j].sub_items.length !== 0) {
-    //                 this.subTaskMapping[this.itemName] = apiResult.data.projects[i].items[j].sub_items
-    //               }
-    //             }
-    //           }
-    //           else {
-    //             continue;
-    //           }
-    //           console.log(this.subTaskMapping)
-    //           this.subItemsList.splice(0, this.subItemsList.length)
-
-    //         }
-    //       }
-    //     } else {
-    //       this.toastr.error(apiResult.message, '', { timeOut: 1250 })
-    //     }
-    //   }, (err) => {
-    //     this.toastr.error("Some Error Occured");
-    //   })
-  } // end of updateSubItemsInDom
+  } // end of subItemModalFormSubmit  
 
   // function to execute when item is marked as Done
   markedAsDone(value) {
@@ -805,7 +769,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName}, are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -905,7 +869,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -997,7 +961,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1098,7 +1062,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1199,7 +1163,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1324,7 +1288,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();

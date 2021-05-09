@@ -56,6 +56,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public friendsIdMapping: any = [];
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
+  public spinner = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -501,6 +502,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       authToken: this.authToken
     }
     this.mainService.getProjectList(data).subscribe((apiResult) => {
+      this.spinner = false;
       if (apiResult.status === 200) {
         this.projectNamesList.splice(0, this.projectNamesList.length)
         if (apiResult.data.projects.length === 0) {
@@ -526,12 +528,13 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         this.deleteCookies();
         this.router.navigate(['server-error', 500]);
       }
-      else {
-        // this.toastr.error(apiResult.message)
+      else if (apiResult.status === 403) {
+        this.toggleMainMessage = 0;
+        this.toastr.error(apiResult.message)
       }
     }, (err) => {
-      this.deleteCookies();
-      this.router.navigate(['server-error', 500]);
+      // this.deleteCookies();
+      // this.router.navigate(['server-error', 500]);
       this.toastr.error("Some Error Occured", '', { timeOut: 1250 });
     })
   } // end of getProjectLists
@@ -588,7 +591,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
 
   //function to get all the users
   public getAllUsers() {
-    this.appService.getSpecificUsersDetails().subscribe((apiResult) => {
+    let data = {
+      authToken: this.authToken
+    }
+    this.appService.getSpecificUsersDetails(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         var tempList = []
         for (let i of apiResult.data) {
@@ -670,7 +676,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                     this.toggleUndoButton = true;
                   }
                   else {
-                    this.toggleUndoButton = false
+                    this.toggleUndoButton = false;
                   }
                   this.toastr.error('Undo failed', '', { timeOut: 4000 })
                 }
@@ -720,7 +726,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName}, are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -820,7 +826,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -912,7 +918,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1013,7 +1019,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1114,7 +1120,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1239,7 +1245,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
                 this.router.navigate(['server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.userInfo.firstName} ${this.userInfo.lastName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();

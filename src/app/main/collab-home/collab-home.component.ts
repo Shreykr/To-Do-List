@@ -51,6 +51,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
   public errorFlag = 0;
+  public spinner = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -227,6 +228,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
       authToken: this.authToken
     }
     this.mainService.getProjectList(data).subscribe((apiResult) => {
+      this.spinner = false;
       if (apiResult.status === 200) {
         if (apiResult.data.projects.length === 0) {
           this.toggleMainMessage = 0;
@@ -483,7 +485,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName}, are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -583,7 +585,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation. `, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -675,7 +677,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation. `, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -776,7 +778,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation. `, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -877,7 +879,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation. `, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();
@@ -1002,7 +1004,7 @@ export class CollabHomeComponent implements OnInit, CheckUser {
                 this.router.navigate(['/server-error', 500]);
                 this.toastr.error('Some error occured', '', { timeOut: 2000 });
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation. `, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.deleteCookies();

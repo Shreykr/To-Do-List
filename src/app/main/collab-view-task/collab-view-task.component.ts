@@ -58,6 +58,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
   public errorFlag = 0;
+  public spinner = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -256,6 +257,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
       authToken: this.authToken
     }
     this.mainService.getItemList(data).subscribe((apiResult) => {
+      this.spinner = false;
       if (apiResult.status === 200) {
         this.itemNamesList.splice(0, this.itemNamesList.length)
         this.subItemsList.splice(0, this.subItemsList.length)
@@ -919,7 +921,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                 }
 
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
@@ -979,7 +981,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                 }
 
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
@@ -1041,7 +1043,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                   this.toggleUndoButton = false
                 }
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
@@ -1102,7 +1104,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                   this.toggleUndoButton = false
                 }
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
@@ -1163,7 +1165,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                   this.toggleUndoButton = false
                 }
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })
@@ -1234,7 +1236,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
                   this.toggleUndoButton = false
                 }
               })
-              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} are permanent.`, '', { timeOut: 5000 })
+              this.toastr.error(`Changes done by main user: ${this.collabLeaderName} take precedence and affects undo operation.`, '', { timeOut: 5000 })
             }
           }, (err) => {
             this.toastr.error('Some Error Occured', '', { timeOut: 3000 })

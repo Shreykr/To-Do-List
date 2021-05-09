@@ -212,16 +212,24 @@
 </div>
 
 <div id="main-content" class="main-content">
-    <div class="sub-content" *ngIf="!toggleMainMessage">
+    <div class="sub-content" *ngIf="spinner">
+        <div class="row ">
+            <div class="container project-heading text-center">
+                <div class="spinner-grow text-danger" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="sub-content" *ngIf="!toggleMainMessage && !spinner ">
         <div class="row ">
             <div class="container project-heading text-center">
                 <h4>You have not created any projects :-(</h4>
             </div>
         </div>
     </div>
-    <div class="sub-content" *ngIf="toggleMainMessage">
+    <div class="sub-content" *ngIf="toggleMainMessage && !spinner">
         <div class="row ">
-
             <div class="container project-heading text-center">
                 <h3>All projects</h3>
             </div>

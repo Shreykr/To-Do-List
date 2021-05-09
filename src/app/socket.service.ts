@@ -13,10 +13,11 @@ import { HttpErrorResponse } from "@angular/common/http";
 export class SocketService {
 
   private url = 'http://api.to-do-list.live';
+
   private socket;
 
   constructor(public http: HttpClient) {
-    this.socket = io(this.url);
+    this.socket = io(this.url, { 'transports': ['websocket'] });
   }
 
   public startConnection = () => {
@@ -24,7 +25,7 @@ export class SocketService {
       this.socket = io(this.url);
       observer.next();
     })
-  }
+  } // end of startConnection
 
   public verifyUser = () => {
     return Observable.create((observer) => {
@@ -32,11 +33,11 @@ export class SocketService {
         observer.next(data);
       });
     });
-  }
+  } // end of verifyUser
 
   public setUser = (authToken) => {
     this.socket.emit('set-user', authToken);
-  }
+  } // end of setUser
 
   public receiveRealTimeNotifications = (userId) => {
     return Observable.create((observer) => {
@@ -44,19 +45,19 @@ export class SocketService {
         observer.next(data)
       })
     })
-  }
+  } // end of receiveRealTimeNotifications
 
   public sendRequestNotification = (notificationObject) => {
     this.socket.emit('friend-request-notification', notificationObject)
-  }
+  } // end of sendRequestNotification
 
   public sendFriendAcceptNotification = (notificationObject) => {
     this.socket.emit('friend-accept-notification', notificationObject)
-  }
+  } // end of sendFriendAcceptNotification
 
   public sendConnectionStatusNotification = (notificationObject) => {
     this.socket.emit('friend-connect-notification', notificationObject)
-  }
+  } // end of sendConnectionStatusNotification
 
   public receiveGroupNotifications = () => {
     return Observable.create((observer) => {
@@ -64,19 +65,19 @@ export class SocketService {
         observer.next(data)
       })
     })
-  }
+  } // end of receiveGroupNotifications
 
   public sendGroupEditsNotification = (notificationObject) => {
     this.socket.emit('friend-edits-notification', notificationObject)
-  }
+  } // end of sendGroupEditsNotification
 
   public disconnectFriend = (notificationObject) => {
     this.socket.emit('disconnectFriend', notificationObject)
-  }
+  } // end of disconnectFriend
 
   public exitSocket = () => {
     this.socket.disconnect();
-  }
+  } // end of exitSocket
 
   private handleError(err: HttpErrorResponse) {
 
@@ -88,4 +89,4 @@ export class SocketService {
     }
     return Observable.throw(errorMessage);
   }
-}
+} // end of handleError

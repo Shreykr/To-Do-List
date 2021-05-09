@@ -19,7 +19,7 @@ export class InterceptorService {
         () => {
           setTimeout(() => {
             this.loaderService.loading.next(false)
-          }, 1250)
+          }, 850)
         })
     )
   }
