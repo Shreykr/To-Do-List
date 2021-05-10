@@ -354,6 +354,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       userId: this.userInfo.userId,
       authToken: this.authToken
     }
+    this.friendsIdMapping.splice(0, this.friendsIdMapping.length)
     this.mainService.getUserFriendList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         for (let i of apiResult.data['friendsList']) {
@@ -366,20 +367,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
             userId: j,
             authToken: this.authToken
           }
-          this.friendsIdMapping.splice(0, this.friendsIdMapping.length)
           this.appService.getUserName(data).subscribe((apiResult) => {
             if (apiResult.status === 200) {
               let fullName = apiResult.data[0]['firstName'] + " " + (apiResult.data[0]['lastName']).trim()
-              if (this.friendsIdMapping.length === 0) {
-                this.friendsIdMapping.push({ userId: j, fullName: fullName })
-              }
-              else {
-                for (let k in this.friendsIdMapping) {
-                  if (this.friendsIdMapping[k].userId != j) {
-                    this.friendsIdMapping.push({ userId: j, fullName: fullName })
-                  }
-                }
-              }
+              this.friendsIdMapping.push({ userId: j, fullName: fullName })
             }
             else if (apiResult.status === 404) {
               apiResult.message = "Authentication Token is either invalid or expired!"
@@ -390,6 +381,9 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
             else if (apiResult.status === 500) {
               this.deleteCookies();
               this.router.navigate(['server-error', 500]);
+            }
+            else {
+              this.toastr.error('Details not found', '', { timeOut: 2000 });
             }
           },
             (err) => {
