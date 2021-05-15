@@ -148,6 +148,15 @@ export class MainService {
     return this.http.post(`${this.url}/api/v1/main/add-friend`, params)
   } // end of addFriend
 
+  public removeFriend(data): Observable<any> {
+    var params = new HttpParams();
+    params = params.set('mainId', data.mainId)
+    params = params.set('friendId', data.friendId)
+    params = params.set('authToken', data.authToken)
+
+    return this.http.post(`${this.url}/api/v1/main/remove-friend`, params)
+  } // end of addFriend
+
   public getUserFriendList(data): Observable<any> {
     var params = new HttpParams();
     params = params.set('userId', data.userId)

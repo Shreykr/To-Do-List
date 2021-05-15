@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -17,7 +17,6 @@ declare const closeNavigationBarv1: any;
 declare const openNavgationBarv2: any;
 declare const closeNavigationBarv2: any;
 declare const destroyModal: any;
-
 @Component({
   selector: 'app-main-home',
   templateUrl: './main-home.component.html',
@@ -57,6 +56,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public toggleUndoButton: Boolean = false;
   public undoObject = {};
   public spinner = true;
+  public friendId: any;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -189,6 +189,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
         this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
           if (apiResult.status === 200) {
             this.socketService.sendRequestNotification(notificationObject);
+            this.toastr.success("Request sent", '', { timeOut: 2000 });
           }
           else if (apiResult.status === 404) {
             apiResult.message = "Authentication Token is either invalid or expired!"
@@ -232,7 +233,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   // function to receive real time notifications
   receiveRealTimeNotifications() {
     this.subscription_2 = this.socketService.receiveRealTimeNotifications(this.userInfo.userId).subscribe((data) => {
-      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 })
+      if (data.type === "Friend Removal") {
+        delete this.friendsIdMapping[data.fromId];
+      }
+      this.toastr.info(`${data.notificationMessage}`, '', { timeOut: 7000 });
     })
   } // end of receiveRealTimeNotifications
 
@@ -303,10 +307,30 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
       authToken: this.authToken
     }
-    this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
+    this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.toastr.success(apiResult.message, '', { timeOut: 2250 })
-        this.socketService.sendFriendAcceptNotification(notificationObject);
+        this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
+          if (apiResult.status === 200) {
+            this.toastr.success(apiResult.message, '', { timeOut: 2250 })
+            this.socketService.sendFriendAcceptNotification(notificationObject);
+          }
+          else if (apiResult.status === 404) {
+            apiResult.message = "Authentication Token is either invalid or expired!"
+            this.toastr.error(apiResult.message);
+            this.deleteCookies();
+            this.router.navigate(['not-found']);
+          }
+          else if (apiResult.status === 500) {
+            this.deleteCookies();
+            this.router.navigate(['server-error', 500]);
+          }
+          else {
+            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+          }
+        }, (err) => {
+          this.deleteCookies();
+          this.toastr.error('Some error occured', '', { timeOut: 2250 })
+        })
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
@@ -323,9 +347,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
     }, (err) => {
       this.deleteCookies();
-      this.toastr.error('Some error occured', '', { timeOut: 2250 })
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some Error occured', '', { timeOut: 2000 });
     })
-  }// end of addFriend
+  }// end of addFriend  
 
   // function to get friend names to display on friends modal
   getAllFriendsOfUser() {
@@ -334,6 +359,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       authToken: this.authToken
     }
     this.friendsIdMapping.splice(0, this.friendsIdMapping.length)
+    this.friendsIdList.splice(0, this.friendsIdList.length)
     this.mainService.getUserFriendList(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         for (let i of apiResult.data['friendsList']) {
@@ -435,6 +461,47 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       this.toastr.error('Some error occured', '', { timeOut: 2000 });
     })
   } // end of connectWithFriend
+
+  updateFriendForRemoval(friendId) {
+    this.friendId = friendId
+  } // end of updateFriendForRemoval
+
+  removeFriend() {
+    let data = {
+      mainId: this.userInfo.userId,
+      friendId: this.friendId,
+      authToken: this.authToken
+    }
+    this.mainService.removeFriend(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toastr.success(apiResult.message, '', { timeOut: 2000 });
+        delete this.friendsIdMapping[this.friendId];
+        let notificationObject = {
+          fromId: this.userInfo.userId,
+          toId: this.friendId,
+          type: 'Friend Block',
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has unfriended you.`
+        }
+        this.socketService.sendFriendRemovalNotification(notificationObject);
+      } else if (apiResult.status === 404) {
+        this.toastr.error(apiResult.message);
+        this.deleteCookies();
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
+        this.friendsModalFlag = false;
+        //this.toastr.error(apiResult.message, '', { timeOut: 2250 })
+      }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error('Some Error occured', '', { timeOut: 2000 });
+    })
+  } // end of removeFriend
 
   // function to check if there are any friend actions logged
   public checkActionLogger() {

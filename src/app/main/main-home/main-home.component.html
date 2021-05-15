@@ -196,8 +196,9 @@
                                             <button class="btn btn-dark"
                                                 (click)="connectWithFriend(friend.userId,friend.fullName)">Connect</button>
                                             <span><img class="remove-image ml-4 ml-sm-3 mt-2"
-                                                    src="/assets/minus-boy-user.svg" data-toggle="modal"
-                                                    data-target="#confirmationModal" data-dismiss="modal"></span>
+                                                    src="/assets/remove-boy-user.svg" data-dismiss="modal"
+                                                    (click)="updateFriendForRemoval(friend.userId)" data-toggle="modal"
+                                                    data-target="#confirmationModal"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -217,15 +218,16 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalCenterTitle">Are you sure you want to remove this friend</h5>
+                <h5 class="modal-title" id="exampleModalCenterTitle">Remove this friend ? <p class="text-danger">You
+                        will not be able to send another request</p>
+                </h5>
                 <button type="button" class="close" data-toggle="modal" data-target="#friendsModal" data-dismiss="modal"
                     aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body mx-auto">
-                <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
-                    class="btn btn-primary ">Yes
+                <button type="submit" class="btn btn-primary" (click)="removeFriend()" data-dismiss="modal">Yes
                 </button>
                 <button type="button" class="btn btn-secondary ml-5" data-toggle="modal" data-target="#friendsModal"
                     data-dismiss="modal">No</button>

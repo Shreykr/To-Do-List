@@ -9,7 +9,6 @@ function openNavgationBarv1() {
 }
 
 function openNavgationBarv2(width,height) {
-  var marginWidth = width/3.35;
   document.getElementById("sidenav").style.width = "200"+"px";
   document.getElementById("main-content").style.filter="blur(8px)";  
 }

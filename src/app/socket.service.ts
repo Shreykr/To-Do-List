@@ -44,7 +44,7 @@ export class SocketService {
   public receiveRealTimeNotifications = (userId) => {
     return Observable.create((observer) => {
       this.socket.on(userId, (data) => {
-        observer.next(data)
+        observer.next(data);
       })
     })
   } // end of receiveRealTimeNotifications
@@ -55,6 +55,10 @@ export class SocketService {
 
   public sendFriendAcceptNotification = (notificationObject) => {
     this.socket.emit('friend-accept-notification', notificationObject)
+  } // end of sendFriendAcceptNotification
+
+  public sendFriendRemovalNotification = (notificationObject) => {
+    this.socket.emit('friend-removed-notification', notificationObject)
   } // end of sendFriendAcceptNotification
 
   public sendConnectionStatusNotification = (notificationObject) => {
