@@ -303,30 +303,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} has added you as their friend`,
       authToken: this.authToken
     }
-    this.mainService.verifyNotification(notificationObject).subscribe((apiResult) => {
+    this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
       if (apiResult.status === 200) {
-        this.mainService.addFriend(notificationObject).subscribe((apiResult) => {
-          if (apiResult.status === 200) {
-            this.toastr.success(apiResult.message, '', { timeOut: 2250 })
-            this.socketService.sendFriendAcceptNotification(notificationObject);
-          }
-          else if (apiResult.status === 404) {
-            apiResult.message = "Authentication Token is either invalid or expired!"
-            this.toastr.error(apiResult.message);
-            this.deleteCookies();
-            this.router.navigate(['not-found']);
-          }
-          else if (apiResult.status === 500) {
-            this.deleteCookies();
-            this.router.navigate(['server-error', 500]);
-          }
-          else {
-            this.toastr.error(apiResult.message, '', { timeOut: 2250 })
-          }
-        }, (err) => {
-          this.deleteCookies();
-          this.toastr.error('Some error occured', '', { timeOut: 2250 })
-        })
+        this.toastr.success(apiResult.message, '', { timeOut: 2250 })
+        this.socketService.sendFriendAcceptNotification(notificationObject);
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
@@ -343,8 +323,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       }
     }, (err) => {
       this.deleteCookies();
-      this.router.navigate(['server-error', 500]);
-      this.toastr.error('Some Error Occured', '', { timeOut: 2000 })
+      this.toastr.error('Some error occured', '', { timeOut: 2250 })
     })
   }// end of addFriend
 

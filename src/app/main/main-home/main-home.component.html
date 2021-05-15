@@ -1,6 +1,6 @@
-<div class="topnav">
-    <span class="navbar-icon ml-3" (click)="toggleNav()" data-toggle="tooltip-topNav"
-        title="Press Esc Key to toggle">&#9776;
+<div class="topnav" [ngClass]="{'dark-theme-mode':true}">
+    <span class="navbar-icon ml-3" (click)="toggleNav()" data-toggle="tooltip-topNav" title="Press Esc Key to toggle">
+        &#9776;
     </span>
 </div>
 <div id="sidenav" class="sidenav-collapse">
@@ -80,8 +80,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">People using toDo</h3>
-                <button type="button" class="close" data-dismiss="modal">×</button>
-
+                <button type="button" class="close" data-dismiss="modal">x</button>
             </div>
             <div class="col-12 col-sm-12 text-left mt-2">
                 <h6 class="text-muted"> (Add only trusted users as Friend to avoid possible spam)</h6>
@@ -190,12 +189,15 @@
                             <li class="list-group-item">
                                 <div class="container-fluid">
                                     <div class="row" *ngIf="friendsModalFlag">
-                                        <div class="col-7 col-sm-8">
+                                        <div class="col-6 col-sm-7">
                                             {{friend.fullName}}
                                         </div>
-                                        <div class="col-5 col-sm-4 text-right">
+                                        <div class="col-6 col-sm-5 connect-button">
                                             <button class="btn btn-dark"
                                                 (click)="connectWithFriend(friend.userId,friend.fullName)">Connect</button>
+                                            <span><img class="remove-image ml-4 ml-sm-3 mt-2"
+                                                    src="/assets/minus-boy-user.svg" data-toggle="modal"
+                                                    data-target="#confirmationModal" data-dismiss="modal"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -210,7 +212,27 @@
         </div>
     </div>
 </div>
-
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmationModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Are you sure you want to remove this friend</h5>
+                <button type="button" class="close" data-toggle="modal" data-target="#friendsModal" data-dismiss="modal"
+                    aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mx-auto">
+                <button type="submit" [disabled]="!projectModalForm.get('projectName').valid"
+                    class="btn btn-primary ">Yes
+                </button>
+                <button type="button" class="btn btn-secondary ml-5" data-toggle="modal" data-target="#friendsModal"
+                    data-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="main-content" class="main-content">
     <div class="sub-content" *ngIf="spinner">
         <div class="row ">

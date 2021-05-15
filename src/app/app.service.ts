@@ -14,7 +14,8 @@ import 'rxjs/add/operator/toPromise';
 })
 export class AppService {
 
-  private url = 'http://api.to-do-list.live';
+  //private url = 'http://api.to-do-list.live';
+  private url = 'http://localhost:3000';
 
   constructor(
     public http: HttpClient

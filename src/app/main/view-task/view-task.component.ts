@@ -233,7 +233,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       }
       else {
         this.notificationModalFlag = false;
-        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
       }
     }, (err) => {
       this.deleteCookies();
@@ -1321,9 +1321,9 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   // user will be logged out
   public logoutUser() {
     let data = {
-      userId: this.userInfo.userIdId,
+      userId: this.userInfo.userId,
       authToken: this.authToken
-    } // end of logoutUser
+    }
     this.appService.logoutFunction(data).subscribe((apiResult) => {
       if (apiResult.status === 200) {
         this.deleteCookies();
@@ -1334,7 +1334,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
       else {
         this.deleteCookies();
         this.socketService.exitSocket();
-        //this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
         this.router.navigate(['/home'])
       }
     })

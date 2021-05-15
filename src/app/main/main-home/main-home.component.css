@@ -94,6 +94,13 @@
     color:white;
 }
 
+
+.remove-image{
+    width:100%;
+    max-width:25px;
+    cursor:pointer;
+}
+
 .notifications{
     display: flex;
     flex-direction: row;

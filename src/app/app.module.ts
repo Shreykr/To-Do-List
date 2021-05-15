@@ -8,7 +8,7 @@ import { MainHomeComponent } from './main/main-home/main-home.component';
 import { ViewTaskComponent } from './main/view-task/view-task.component';
 import { CollabHomeComponent } from './main/collab-home/collab-home.component';
 import { CollabViewTaskComponent } from './main/collab-view-task/collab-view-task.component';
-import { ErrorComponent } from './general/error/error.component'
+import { ErrorComponent } from './general/error/error.component';
 
 //Modules
 import { NgModule } from '@angular/core';
@@ -18,7 +18,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AppService } from './app.service';
 import { MainService } from './main.service';
@@ -45,6 +46,7 @@ import { InterceptorService } from './interceptor.service';
     ReactiveFormsModule,
     HttpClientModule,
     MatProgressBarModule,
+    MatIconModule,
     ToastrModule.forRoot(),
     RouterModule.forRoot([
       { path: 'home', component: HomeComponent },
