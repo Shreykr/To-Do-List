@@ -235,6 +235,27 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmationModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Delete this project ? <p class="text-danger">This
+                        action is irreversible !</p>
+                </h5>
+                <button type="button" class="close" data-toggle="modal" data-target="#friendsModal" data-dismiss="modal"
+                    aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mx-auto">
+                <button type="submit" class="btn btn-primary" (click)="deleteProject()" data-dismiss="modal">Yes
+                </button>
+                <button type="button" class="btn btn-secondary ml-5" data-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="main-content" class="main-content">
     <div class="sub-content" *ngIf="spinner">
         <div class="row ">
@@ -266,9 +287,13 @@
                         <h5 class="card-title">{{project}}</h5>
                     </div>
                     <div class="card-footer text-muted footer">
-                        <button class="btn btn-danger btn-md btn-block" (click)="goToViewTask(project)">View
+                        <button class="btn btn-primary btn-md" (click)="goToViewTask(project)">View
                             Tasks
                         </button>
+                        <span><button class="btn btn-danger btn-md ml-3" data-toggle="modal"
+                                data-target="#deleteProjectModal" (click)="updateProjectName(project)">Delete
+                            </button></span>
+
                     </div>
                 </div>
             </div>

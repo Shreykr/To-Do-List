@@ -57,6 +57,7 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
   public undoObject = {};
   public spinner = true;
   public friendId: any;
+  public projectName: any;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -466,6 +467,10 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
     this.friendId = friendId
   } // end of updateFriendForRemoval
 
+  updateProjectName(projectName) {
+    this.projectName = projectName;
+  } // end of updateProjectName
+
   removeFriend() {
     let data = {
       mainId: this.userInfo.userId,
@@ -623,6 +628,49 @@ export class MainHomeComponent implements OnInit, OnDestroy, CheckUser {
       this.toastr.error("Some Error Occured");
     })
   } // end of mainModalFormSubmit
+
+  deleteProject() {
+    this.destroyAllModal();
+    let data = {
+      userId: this.userInfo.userId,
+      authToken: this.authToken,
+      projectName: this.projectName
+    }
+    this.mainService.deleteProjectList(data).subscribe((apiResult) => {
+      if (apiResult.status === 200) {
+        this.toggleMainMessage = 1;
+        this.toastr.success(apiResult.message, '', { timeOut: 1250 })
+        this.projectNamesList = this.projectNamesList.filter(item => item !== this.projectName)
+        let notificationObject = {
+          fromId: this.userInfo.userId,
+          toId: this.userInfo.userId,
+          type: "toDo Owner action",
+          notificationMessage: `${this.userInfo.firstName} ${this.userInfo.lastName} deleted a project with name ${this.projectName}`,
+          fullName: `${this.userInfo.firstName} ${this.userInfo.lastName}`,
+          refreshProjectList: true
+        };
+
+        this.socketService.sendGroupEditsNotification(notificationObject);
+      }
+      else if (apiResult.status === 404) {
+        apiResult.message = "Authentication Token is either invalid or expired!"
+        //this.toastr.error(apiResult.message, '', { timeOut: 2000 });
+        this.deleteCookies()
+        this.router.navigate(['not-found']);
+      }
+      else if (apiResult.status === 500) {
+        this.deleteCookies();
+        this.router.navigate(['server-error', 500]);
+      }
+      else {
+        this.toastr.error(apiResult.message, '', { timeOut: 1250 })
+      }
+    }, (err) => {
+      this.deleteCookies();
+      this.router.navigate(['server-error', 500]);
+      this.toastr.error("Some Error Occured");
+    })
+  } // end of deleteProject
 
   // navigate to view task component
   goToViewTask(projectNameSelected) {
