@@ -8,6 +8,8 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
 
+  public imageString: any;
+
   constructor(
     public router: Router
   ) { }
@@ -16,8 +18,13 @@ export class HomeComponent implements OnInit {
   }
 
   //function to navigate to signup route
+  public updateImageString: any = (img) => {
+    this.imageString = img;
+  } // end of navigateToSignUp
+
+  //function to navigate to signup route
   public navigateToSignUp: any = () => {
     this.router.navigate(['/signup']);
-  }
+  } // end of navigateToSignUp
 
 }

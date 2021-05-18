@@ -56,6 +56,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
   public undoObject = {};
   public errorFlag = 0;
   public spinner = true;
+  public successValue: Boolean = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -352,11 +353,6 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             delete this.statusMapping[varKey];
           }
         }
-        for (let varKey in this.subTaskMapping) {
-          if (this.subTaskMapping.hasOwnProperty(varKey)) {
-            delete this.subTaskMapping[varKey];
-          }
-        }
         for (let i in apiResult.data.projects) {
           for (let j in apiResult.data.projects[i].items) {
             if (apiResult.data.projects[i].name === this.projectName) {
@@ -380,6 +376,13 @@ export class ViewTaskComponent implements OnInit, CheckUser {
             }
             if (this.subItemsList.length !== 0) {
               this.subTaskMapping[apiResult.data.projects[i].items[j].itemName] = apiResult.data.projects[i].items[j].sub_items
+            }
+            let tempArr = Object.values(this.statusMapping);
+            for (let i of tempArr) {
+              if (i != true) {
+                this.successValue = false;
+                break;
+              }
             }
             this.subItemsList.splice(0, this.subItemsList.length)
           }
@@ -430,6 +433,7 @@ export class ViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         };
         this.socketService.sendGroupEditsNotification(notificationObject);
+        this.successValue = false;
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
@@ -537,6 +541,14 @@ export class ViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         };
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let tempArr = Object.values(this.statusMapping);
+        this.successValue = true;
+        for (let i of tempArr) {
+          if (i !== true) {
+            this.successValue = false;
+            break;
+          }
+        }
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"
@@ -647,6 +659,14 @@ export class ViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         };
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let tempArr = Object.values(this.statusMapping);
+        this.successValue = true;
+        for (let i of tempArr) {
+          if (i !== true) {
+            this.successValue = false;
+            break;
+          }
+        }
       }
       else if (apiResult.status === 404) {
         apiResult.message = "Authentication Token is either invalid or expired!"

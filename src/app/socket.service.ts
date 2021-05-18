@@ -12,9 +12,9 @@ import { HttpErrorResponse } from "@angular/common/http";
 @Injectable()
 export class SocketService {
 
-  //private url = 'http://api.to-do-list.live';
+  private url = 'http://api.to-do-list.live';
 
-  private url = 'http://localhost:3000';
+  //private url = 'http://localhost:3000';
 
   private socket;
 

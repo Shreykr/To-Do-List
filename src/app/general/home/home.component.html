@@ -19,8 +19,6 @@
         </div>
     </div>
 </nav>
-
-
 <div class="container-fluid">
     <div class="row">
         <div class="d-flex flex-row flex-wrap align-items-center mt-3 mt-sm-2">
@@ -34,6 +32,313 @@
                     <h6 class="text-muted text-center mt-2 mt-sm-4 login-text">Already have an account? <a class="ml-1"
                             routerLink="/login">Login</a> </h6>
                 </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid">
+        <div class="row" data-toggle="modal" data-target="#aboutModal">
+            <span style="flex: 0 90%;"></span>
+            <div class="circle res-circle">
+                <div class="circle-txt">&#9432;</div>
+            </div>
+        </div>
+    </footer>
+</div>
+<div class="modal fade" id="aboutModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">About toDoList</h3>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="accordion">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseOne" aria-controls="collapseOne">
+                                    <b>Latest Update info</b>
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <b>Added info section in home</b><br><br>Users can now see most of the app
+                                        content
+                                        and
+                                        what
+                                        it has to offer without the need to create
+                                        an account to explore the app.
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Added UI element in View Tasks</b> <br><br>
+                                        The content background now changes to green when all the tasks within a project
+                                        is completed.
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Added option to remove friends</b> <br><br>
+                                        Users can now remove a friend. However, once removed it is not possible to send
+                                        another friend request.
+                                        It is as if you have partially blocked the user. This is because the other user
+                                        still
+                                        has a option to send you a request and you can choose to accept or leave it be
+                                        in the Notifications.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseSpecial" aria-expanded="true"
+                                    aria-controls="collapseSpecial">
+                                    <b>toDoList Special Features</b>
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseSpecial" class="collapse" aria-labelledby="headingThree"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        Toggle Sidenav using <b>Esc</b> key.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Undo actions by Friends using <b>Ctrl+Z</b> key.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Different sidenav action based on screen size.
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>Real-time notifications</b> of friend activity.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Unique design using cards as list holders.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Most app details are presented on home screen. No account needed to know about
+                                        the app.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
+                                    aria-controls="collapseTwo">
+                                    <b>App demo (Future update. Sample vid for lols)</b>
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                            <div class="card-body">
+                                <iframe class="vid-responsive" height="200"
+                                    src="https://www.youtube.com/embed/5p8wTOr8AbU" allowfullscreen="allowfullscreen"
+                                    mozallowfullscreen="mozallowfullscreen" msallowfullscreen="msallowfullscreen"
+                                    oallowfullscreen="oallowfullscreen"
+                                    webkitallowfullscreen="webkitallowfullscreen"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseThree" aria-expanded="true"
+                                    aria-controls="collapseTwo">
+                                    Main component
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseThree" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <img src="assets/main_home.png" alt="" style="cursor:zoom-in"
+                                            class="d-inline-block align-text-top img-responsive"
+                                            (click)="updateImageString('assets/main_home.png')" data-toggle="modal"
+                                            data-target="#imageModal" data-dismiss="modal">
+                                    </li>
+                                    <li class="list-group-item">
+                                        Component seen right after login. User can create new projects and view their
+                                        previous projects.
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b>View Tasks</b> opens a new component where users can see all the tasks in
+                                        that
+                                        project.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Projects can be deleted. The action is irreversible.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can search other users who have registered to toDoList app using the
+                                        <b>Search Users</b> button. User can then add friends they trust.
+                                    </li>
+                                    <li class="list-group-item">
+                                        Although, adding a particular user cannot be performed again if they are
+                                        removed.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can see the friends once they have been added using the <b>Friends</b>
+                                        button.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can see any friend addition/removal <b>Notifications</b> they have missed
+                                        that appears in real-time
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can <b>Logout</b> from any component (page) that they access.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseFour" aria-expanded="true"
+                                    aria-controls="collapseThree">
+                                    View Tasks component
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseFour" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <img src="assets/view_tasks.png" alt="" style="cursor:zoom-in"
+                                            class="d-inline-block align-text-top img-responsive"
+                                            (click)="updateImageString('assets/view_tasks.png')" data-toggle="modal"
+                                            data-target="#imageModal" data-dismiss="modal">
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can <b>Add new tasks</b> to the project
+                                    </li>
+                                    <li class="list-group-item">
+                                        User can edit task name, add sub-tasks, mark task as completed and delete tasks.
+                                    </li>
+                                    <li class="list-group-item">
+                                        On completion of all tasks i.e marking as <b>Done</b>, the task content
+                                        background changes to green, otherwise, it remains red.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseFive" aria-expanded="true"
+                                    aria-controls="collapseFive">
+                                    Collab-Home component
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseFive" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <img src="assets/collab_home.png" alt="" style="cursor:zoom-in"
+                                            class="d-inline-block align-text-top img-responsive"
+                                            (click)="updateImageString('assets/collab_home.png')" data-toggle="modal"
+                                            data-target="#imageModal" data-dismiss="modal">
+                                    </li>
+                                    <li class="list-group-item">
+                                        The component appears once user <b>Connects</b> with a friend from
+                                        <b>main-home</b> component.
+                                        User will enter a collab room.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User will now see <b>projects created by their friend.</b>
+                                    </li>
+                                    <li class="list-group-item">
+                                        User will receive <b>real-time notifications</b> of all the activities done on
+                                        the projects/tasks by <i>main user and other friends in the collab room.</i>
+                                    </li>
+                                    <li class="list-group-item">
+                                        Main user or friends can <b>Undo</b> any changes done by a friend. They can use
+                                        the button that appears or use <b>Ctrl+Z</b>
+                                    </li>
+                                    <li class="list-group-item">
+                                        Main user has more authority over their lists and most of their actions are
+                                        persistent (Undo has no effect). Some actions take precedence when doing Undo
+                                        operation.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User has to <b>Disconnect</b> to stop receiving notifications from this collab
+                                        room.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button
+                                    class="btn btn-info btn-block dropdown-toggle dropdown-toggle-ellipsis text-left responsive-width"
+                                    data-toggle="collapse" data-target="#collapseSix" aria-expanded="true"
+                                    aria-controls="collapseFive">
+                                    Collab-View-Tasks component
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseSix" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <img src="assets/collab_view_tasks.png" alt="" style="cursor:zoom-in"
+                                            class="d-inline-block align-text-top img-responsive"
+                                            (click)="updateImageString('assets/collab_view_tasks.png')"
+                                            data-toggle="modal" data-target="#imageModal" data-dismiss="modal">
+                                    </li>
+                                    <li class="list-group-item">
+                                        The component appears once user <b>Views Tasks</b> in a project of a friend.
+                                    </li>
+                                    <li class="list-group-item">
+                                        User will now see <b>tasks created by their friend</b> in that project.
+                                    </li>
+                                    <li class="list-group-item">
+                                        All the operation logic mentinoed in <b>Collab-Home</b> applies to this
+                                        component.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <img src={{imageString}} alt="" class="d-inline-block align-text-top img-responsive">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger btn-sm mx-auto" data-toggle="modal"
+                    data-target="#aboutModal" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

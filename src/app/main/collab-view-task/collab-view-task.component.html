@@ -147,7 +147,7 @@
             </div>
         </div>
     </div>
-    <div class="sub-content" *ngIf="toggleMainMessage && !spinner">
+    <div class="sub-content" [ngClass]="{'all-success':successValue}" *ngIf="toggleMainMessage && !spinner">
         <div class="row ">
             <div class="container task-heading text-center">
                 <h3>Tasks in

@@ -1,6 +1,10 @@
 :root{
     font-size: 20px;
   }
+
+/* * {
+  border: 1px solid rgb(153, 0, 255) !important;
+}  */
   
 .home-image{
     width: 100vmax;
@@ -18,6 +22,82 @@ a{
 
 .main>ul>li>a:hover{
   color: white;
+}
+
+.res-circle {
+  width: 3vmax;
+  border-radius: 50%;
+  background: #bcd6ff;
+  position: relative;
+  background: linear-gradient(135deg, #bba7df 0%,#69238a 100%);
+  box-shadow: inset -8px -7px 4px 0px rgba(0,0,0,0.3); 
+  line-height: 0;
+  display: flex;
+  justify-content: center;  
+}
+
+.res-circle{
+  animation-delay: 2s;
+  animation-name: bounce;
+  animation-timing-function: cubic-bezier(1, 1.21, 0.42, 1);
+}
+ 
+.res-circle::after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+  cursor: pointer;
+}
+
+.circle{
+  align-self: flex-end;  
+  animation-duration: 1s;
+  animation-iteration-count: 2;
+  margin: 0 auto 0 auto;
+  transform-origin: bottom;
+}
+
+.circle-txt {
+  position: relative;
+  padding:50%;
+  color:white;
+  font-size: 1.5vmax;
+  text-shadow:0.25px 0.25px 0.75px #000000;
+  text-align: center;
+  font-family: arial, sans-serif;
+  cursor: pointer;
+}
+
+@keyframes bounce {
+  0%   { transform: scale(1,1)      translateY(0); }
+  10%  { transform: scale(1.1,.9)   translateY(0); }
+  30%  { transform: scale(.9,1.1)   translateY(-60px); }
+  50%  { transform: scale(1.05,.95) translateY(0); }
+  57%  { transform: scale(1,1)      translateY(-7px); }
+  64%  { transform: scale(1,1)      translateY(0); }
+  100% { transform: scale(1,1)      translateY(0); }
+}
+
+.dropdown-toggle-ellipsis::after {
+  display: none;
+}
+
+.dropdown-toggle-ellipsis::before {
+  display: inline-block;
+  padding: 0.5rem;
+  font: normal normal normal 14px/1 FontAwesome;
+  content: "\f142";
+}
+
+.img-responsive {
+  display: block;
+  width: 100%;
+  max-height: 100%;
+}
+
+.vid-responsive {
+  display: block;
+  width: 100%;
 }
 
 @media screen and (min-width: 230px)and (max-width:415px) and (max-height:540px) {
@@ -84,6 +164,12 @@ a{
   }  
   .home-image{
     margin-top:20px;
+  }
+}
+
+@media screen and (max-width: 590px){
+  .responsive-width {
+    font-size: 3vw;
   }
 }
   

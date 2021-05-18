@@ -59,6 +59,7 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
   public undoObject = {};
   public errorFlag = 0;
   public spinner = true;
+  public successValue: Boolean = true;
 
   @HostListener('window:resize', ['$event'])
   getScreenSize(event?) {
@@ -295,6 +296,14 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
             if (this.subItemsList.length !== 0) {
               this.subTaskMapping[apiResult.data.projects[i].items[j].itemName] = apiResult.data.projects[i].items[j].sub_items
             }
+            let tempArr = Object.values(this.statusMapping);
+            this.successValue = true;
+            for (let i of tempArr) {
+              if (i !== true) {
+                this.successValue = false;
+                break;
+              }
+            }
             this.subItemsList.splice(0, this.subItemsList.length)
           }
         }
@@ -351,6 +360,14 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         };
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let tempArr = Object.values(this.statusMapping);
+        this.successValue = true;
+        for (let i of tempArr) {
+          if (i !== true) {
+            this.successValue = false;
+            break;
+          }
+        }
         let action = {
           type: "Task Added",
           fromId: this.userInfo.userId,
@@ -584,6 +601,14 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         }
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let tempArr = Object.values(this.statusMapping);
+        this.successValue = true;
+        for (let i of tempArr) {
+          if (i !== true) {
+            this.successValue = false;
+            break;
+          }
+        }
         let action = {
           type: "Task Completed",
           fromId: this.userInfo.userId,
@@ -799,6 +824,14 @@ export class CollabViewTaskComponent implements OnInit, CheckUser {
           refreshItemList: true
         };
         this.socketService.sendGroupEditsNotification(notificationObject);
+        let tempArr = Object.values(this.statusMapping);
+        this.successValue = true;
+        for (let i of tempArr) {
+          if (i !== true) {
+            this.successValue = false;
+            break;
+          }
+        }
         let action = {
           type: "Task Deleted",
           fromId: this.userInfo.userId,

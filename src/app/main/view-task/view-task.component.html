@@ -196,7 +196,7 @@
             </div>
         </div>
     </div>
-    <div class="sub-content" *ngIf="toggleMainMessage && !spinner">
+    <div class="sub-content" [ngClass]="{'all-success':successValue}" *ngIf="toggleMainMessage && !spinner">
         <div class="row ">
             <div class="container task-heading text-center">
                 <h3>Tasks in
@@ -213,7 +213,8 @@
                         <h5 class="card-title">{{item}}</h5>
                         <div class="sub-tasks-node text-justify">
                             <ul *ngFor="let subTask of subTaskMapping[item]; let i = index">
-                                <li>{{subTask}}</li>
+                                <input type="checkbox" class="small" value="{{subTask}}"
+                                    autocomplete="on" />&nbsp;{{subTask}}
                             </ul>
                         </div>
                         <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
