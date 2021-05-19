@@ -24,6 +24,10 @@ a{
   color: white;
 }
 
+.res-circle-pos{
+  flex: 0 95%;
+}
+
 .res-circle {
   width: 3vmax;
   border-radius: 50%;
@@ -137,6 +141,36 @@ a{
   .login-text{
     font-size: 0.75rem;
   }
+}
+
+@media screen and (max-width:850px) {
+  .res-circle-pos{
+    flex: 0 90%;
+  }
+  .res-circle {
+    width: 4vmax;
+  }
+  .circle-txt {
+    font-size: 2.5vmax;
+  }
+}
+
+@media screen and (max-width:425px) {
+  .res-circle-pos{
+    flex: 0 85%;
+  }
+  .res-circle {
+    width: 4vmax;
+  }
+  .circle-txt {
+    font-size: 2.5vmax;
+  }
+}
+
+@media screen and (max-width:330px) {
+  .res-circle-pos{
+    flex: 0 80%;
+  } 
 }
 
 @media screen and (min-width: 413px) and (max-width:730px) and (min-height:626px) {
