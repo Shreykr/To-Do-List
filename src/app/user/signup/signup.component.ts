@@ -63,6 +63,11 @@ export class SignupComponent implements OnInit {
     }
   } // end of verify
 
+  public resetSignUpForm = () => {
+    this.profileSignupForm.reset();
+    this.updateProgressBar();
+  }
+
   // function to update progress bar
   public updateProgressBar = () => {
     if ((this.profileSignupForm.controls.userFirstName.dirty && this.profileSignupForm.controls.userFirstName.valid) && (this.updateObj.firstName !== 1)) {
